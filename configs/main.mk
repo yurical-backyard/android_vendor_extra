@@ -35,4 +35,7 @@ PRODUCT_OTHER_JAVA_DEBUG_INFO := false
 
 # Disable Scudo outside of eng builds to save RAM.
 PRODUCT_DISABLE_SCUDO := true
+
+# Force using the non debug dexpreopter
+USE_DEX2OAT_DEBUG := false
 endif
