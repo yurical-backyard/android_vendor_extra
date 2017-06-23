@@ -25,6 +25,9 @@ PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD := false
 # the size of the system image. This has no bearing on stack traces, but will
 # leave less information available via JDWP.
 PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
+
+# Do not include mini-debug-info to the boot classpath
+WITH_DEXPREOPT_DEBUG_INFO := false
 endif
 
 # Disable Scudo outside of eng builds to save RAM.
