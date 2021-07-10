@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+
 import sys
 import os
 import shutil
@@ -18,21 +21,10 @@ FONTS = {
 }
 
 # Android.bp
-ANDROID_BP_TEMPLATE = """//
-// Copyright (C) 2021 The Proton AOSP Project
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+ANDROID_BP_TEMPLATE = """/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
 
 runtime_resource_overlay {{
     name: "Font{apk_name}Overlay",
@@ -42,25 +34,16 @@ runtime_resource_overlay {{
 """
 
 # AndroidManifest.xml
-ANDROID_MANIFEST_TEMPLATE = """<!--
-    Copyright (C) 2021 The Proton AOSP Project
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+ANDROID_MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.android.theme.font.{pkg_name}">
 
-    <overlay android:targetPackage="android"
+    <overlay
+        android:targetPackage="android"
         android:category="android.theme.customization.font"
         android:priority="1" />
 
@@ -74,25 +57,16 @@ ANDROID_MANIFEST_TEMPLATE = """<!--
 # config.xml
 CONFIG_XML_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
 <!--
-    Copyright (C) 2021 The Proton AOSP Project
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
 -->
 <resources>
+
     <string name="config_bodyFontFamily" translatable="false">{font_name}</string>
     <string name="config_bodyFontFamilyMedium" translatable="false">{font_name}-medium</string>
     <string name="config_headlineFontFamily" translatable="false">{font_name}</string>
     <string name="config_headlineFontFamilyMedium" translatable="false">{font_name}-medium</string>
+
 </resources>
 """
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+
 ttx ${@:-*.ttf}
 
 function replace_name() {
