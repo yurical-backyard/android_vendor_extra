@@ -17,7 +17,7 @@ PRODUCT_DEX_PREOPT_BOOT_IMAGE_PROFILE_LOCATION := frameworks/base/config/boot-im
 SYSTEM_OPTIMIZE_JAVA := true
 SYSTEMUI_OPTIMIZE_JAVA := true
 
-ifeq ($(TARGET_BUILD_VARIANT), user)
+ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
 # Do not include art debug targets
 PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD := false
 
@@ -32,9 +32,7 @@ WITH_DEXPREOPT_DEBUG_INFO := false
 # Do not include mini debug info
 PRODUCT_SYSTEM_SERVER_DEBUG_INFO := false
 PRODUCT_OTHER_JAVA_DEBUG_INFO := false
-endif
 
 # Disable Scudo outside of eng builds to save RAM.
-ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
 PRODUCT_DISABLE_SCUDO := true
 endif
