@@ -4,3 +4,7 @@
 # Material Files
 PRODUCT_PACKAGES += \
     MaterialFiles
+
+# Next Player
+PRODUCT_PACKAGES += \
+    NextPlayer

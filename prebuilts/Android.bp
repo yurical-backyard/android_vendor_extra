@@ -12,3 +12,16 @@ android_app_import {
         enabled: false,
     },
 }
+
+android_app_import {
+    name: "NextPlayer",
+    apk: "app/NextPlayer/NextPlayer.apk",
+    presigned: true,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+    overrides: [
+        "VLC",
+    ],
+}
