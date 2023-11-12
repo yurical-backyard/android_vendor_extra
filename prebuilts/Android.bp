@@ -4,6 +4,22 @@
  */
 
 android_app_import {
+    name: "Auxio",
+    apk: "app/Auxio/Auxio.apk",
+    presigned: true,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+    overrides: [
+        "crDroidMusic",
+        "Eleven",
+        "Music",
+        "MusicPlayerGO",
+    ],
+}
+
+android_app_import {
     name: "MaterialFiles",
     apk: "app/MaterialFiles/MaterialFiles.apk",
     presigned: true,
