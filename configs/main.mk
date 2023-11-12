@@ -29,8 +29,9 @@ PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
 # Do not include mini-debug-info to the boot classpath
 WITH_DEXPREOPT_DEBUG_INFO := false
 
-# Do not include system server mini debug info
+# Do not include mini debug info
 PRODUCT_SYSTEM_SERVER_DEBUG_INFO := false
+PRODUCT_OTHER_JAVA_DEBUG_INFO := false
 endif
 
 # Disable Scudo outside of eng builds to save RAM.
