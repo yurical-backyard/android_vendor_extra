@@ -21,6 +21,22 @@ export BUILD_HOSTNAME=android-build
 # For now, just skip the ABI checks to fix build errors.
 export SKIP_ABI_CHECKS=true
 
+# Check and set ccache path on envsetup
+if [ -z ${CCACHE_EXEC} ]; then
+    ccache_path=$(which ccache)
+    if [ ! -z "$ccache_path" ]; then
+        export USE_CCACHE=1
+        export CCACHE_EXEC="$ccache_path"
+        if [ -z ${CCACHE_DIR} ]; then
+            export CCACHE_DIR=${HOME}/.ccache
+        fi
+        $ccache_path -o compression=true
+        echo -e "ccache enabled and CCACHE_EXEC has been set to : $ccache_path"
+    else
+        echo -e "ccache not found installed!"
+    fi
+fi
+
 # Apply patches
 if [[ "${APPLY_PATCH}" == "true" ]]; then
     echo -e "\033[32m[INFO]: Applying patches...\033[0m"
