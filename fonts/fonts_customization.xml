@@ -6,4 +6,38 @@
 <fonts-modification version="1">
     <!-- Alias for Source Serif to fit the naming convention -->
     <alias name="serif-medium" to="serif" weight="700" />
+
+    <family customizationType="new-named-family" name="nanum-square-neo">
+        <font weight="100" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="100"/>
+        </font>
+        <font weight="200" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="200"/>
+        </font>
+        <font weight="300" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="300"/>
+        </font>
+        <font weight="400" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="400"/>
+        </font>
+        <font weight="500" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="500"/>
+        </font>
+        <font weight="600" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="600"/>
+        </font>
+        <font weight="700" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="700"/>
+        </font>
+        <font weight="800" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="800"/>
+        </font>
+        <font weight="900" style="normal">NanumSquareNeo-VF.ttf
+            <axis tag="wght" stylevalue="900"/>
+        </font>
+    </family>
+    <alias name="nanum-square-neo-thin" to="nanum-square-neo" weight="100" />
+    <alias name="nanum-square-neo-light" to="nanum-square-neo" weight="300" />
+    <alias name="nanum-square-neo-medium" to="nanum-square-neo" weight="500" />
+    <alias name="nanum-square-neo-black" to="nanum-square-neo" weight="900" />
 </fonts-modification>

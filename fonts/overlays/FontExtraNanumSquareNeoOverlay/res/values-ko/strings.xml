@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+-->
+<resources>
+
+    <string name="font_nanum_square_neo_overlay">나눔스퀘어 네오</string>
+
+</resources>
