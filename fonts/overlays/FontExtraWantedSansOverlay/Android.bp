@@ -1,0 +1,23 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+runtime_resource_overlay {
+    name: "FontExtraWantedSansOverlay",
+    theme: "FontExtraWantedSans",
+    product_specific: true,
+    required: [
+        "WantedSans-VF.ttf",
+    ],
+    overrides: [
+        "fonts_customization.xml",
+        "FontLatoOverlay",
+        "FontRubikOverlay",
+        "FontGoogleSansOverlay",
+        "FontHarmonySansOverlay",
+        "FontInterOverlay",
+        "FontManropeOverlay",
+        "FontUrbanistOverlay",
+    ],
+}

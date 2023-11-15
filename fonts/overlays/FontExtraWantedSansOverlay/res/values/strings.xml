@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+-->
+<resources>
+
+    <string name="font_wanted_sans_overlay">Wanted Sans</string>
+
+</resources>

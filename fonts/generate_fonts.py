@@ -15,6 +15,7 @@ METADATA_ALIASES = ['', 'thin', 'light', 'medium', 'black']
 # Example: "Noto Sans": { "family": "noto-sans", "translations": { "ko": "본고딕" } },
 FONTS = {
     "Nanum Square Neo": { "family": "nanum-square-neo", "translations": { "ko": "나눔스퀘어 네오" } },
+    "Wanted Sans": { "family": "wanted-sans" },
 }
 
 # Android.bp license

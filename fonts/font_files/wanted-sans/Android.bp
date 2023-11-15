@@ -1,0 +1,10 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+prebuilt_font {
+    name: "WantedSans-VF.ttf",
+    src: "WantedSans-VF.ttf",
+    product_specific: true,
+}

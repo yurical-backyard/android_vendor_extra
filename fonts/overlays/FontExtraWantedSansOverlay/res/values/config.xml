@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+-->
+<resources>
+
+    <!-- Name of a font family to use for body text. -->
+    <string name="config_bodyFontFamily" translatable="false">wanted-sans</string>
+
+    <!-- Name of a font family to use for medium body text. -->
+    <string name="config_bodyFontFamilyMedium" translatable="false">wanted-sans-medium</string>
+
+    <!-- Name of a font family to use for headlines. If empty, falls back to platform default -->
+    <string name="config_headlineFontFamily" translatable="false">wanted-sans</string>
+
+    <!-- Name of the font family used for system surfaces where the font should use medium weight -->
+    <string name="config_headlineFontFamilyMedium" translatable="false">wanted-sans-medium</string>
+
+    <!-- Name of a font family to use as light font. For theming purpose. This is an additional change. -->
+    <string name="config_lightFontFamily" translatable="false">wanted-sans-light</string>
+
+    <!-- Name of a font family to use as regular font. For theming purpose. This is an additional change. -->
+    <string name="config_regularFontFamily" translatable="false">@string/config_bodyFontFamily</string>
+
+</resources>
