@@ -9,3 +9,6 @@ $(call inherit-product, vendor/extra/configs/prebuilts.mk)
 
 # Inherit font Makefile
 $(call inherit-product, vendor/extra/configs/fonts.mk)
+
+# Inherit Microsoft Makefile
+$(call inherit-product, vendor/aospa/prebuilt/microsoft/packages.mk)
