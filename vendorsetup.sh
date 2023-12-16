@@ -21,6 +21,9 @@ export BUILD_HOSTNAME=android-build
 # For now, just skip the ABI checks to fix build errors.
 export SKIP_ABI_CHECKS=true
 
+# Hardcode High Memory Parallel Process
+export NINJA_HIGHMEM_NUM_JOBS=1
+
 # Check and set ccache path on envsetup
 if [ -z ${CCACHE_EXEC} ]; then
     ccache_path=$(which ccache)
