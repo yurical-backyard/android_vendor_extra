@@ -55,7 +55,7 @@ ANDROID_MANIFEST_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
 """
 
 # config.xml
-CONFIG_XML_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+CONFIG_XML_TEMPLATE = """<?xml version="1.0" encoding="utf-8"?>
 <!--
      SPDX-License-Identifier: Apache-2.0
      SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
