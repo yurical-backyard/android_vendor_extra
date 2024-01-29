@@ -10,5 +10,10 @@ LOCAL_UNINSTALLABLE_MODULE := true
 LOCAL_CERTIFICATE := PRESIGNED
 LOCAL_SRC_FILES := /dev/null
 LOCAL_OVERRIDES_PACKAGES += \
-
+	Abstruct \
+	F-Droid \
+	F-DroidPrivilegedExtension \
+	OpenEUICC \
+	Ripple \
+	Updater
 include $(BUILD_PREBUILT)
