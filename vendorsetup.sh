@@ -27,6 +27,9 @@ export NINJA_HIGHMEM_NUM_JOBS=1
 # Disable bazel for new clang version
 export BUILD_BROKEN_DISABLE_BAZEL=true
 
+# Disable Robolectric test
+export DISABLE_ROBO_RUN_TESTS=true
+
 # Check and set ccache path on envsetup
 if [ -z ${CCACHE_EXEC} ]; then
     ccache_path=$(which ccache)
