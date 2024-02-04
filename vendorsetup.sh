@@ -24,6 +24,9 @@ export SKIP_ABI_CHECKS=true
 # Hardcode High Memory Parallel Process
 export NINJA_HIGHMEM_NUM_JOBS=1
 
+# Disable bazel for new clang version
+export BUILD_BROKEN_DISABLE_BAZEL=true
+
 # Check and set ccache path on envsetup
 if [ -z ${CCACHE_EXEC} ]; then
     ccache_path=$(which ccache)
