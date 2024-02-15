@@ -12,3 +12,9 @@ $(call inherit-product, vendor/extra/configs/fonts.mk)
 
 # Inherit Microsoft Makefile
 $(call inherit-product, vendor/aospa/prebuilt/microsoft/packages.mk)
+
+# Inherit Google Makefile
+ifeq ($(WITH_GMS),true)
+$(call inherit-product, vendor/google/gms/config.mk)
+$(call inherit-product, vendor/google/pixel/config.mk)
+endif
