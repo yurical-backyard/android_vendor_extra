@@ -2,3 +2,4 @@
 # SPDX-FileCopyrightText: Copyright 2024 Yurical <yurical1g@gmail.com>
 
 PRODUCT_PACKAGES += \
+    FrameworksOverlay

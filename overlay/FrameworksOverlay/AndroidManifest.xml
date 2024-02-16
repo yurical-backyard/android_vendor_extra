@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2024 Yurical <yurical1g@gmail.com>
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="android.frameworks.overlay">
+
+    <overlay
+        android:targetPackage="android"
+        android:isStatic="true"
+        android:priority="600" />
+
+    <application
+        android:label="FrameworksOverlay"
+        android:hasCode="false" />
+
+</manifest>
