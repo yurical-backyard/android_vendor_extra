@@ -16,4 +16,13 @@ LOCAL_OVERRIDES_PACKAGES += \
 	OpenEUICC \
 	Ripple \
 	Updater
+
+LOCAL_OVERRIDES_PACKAGES += \
+	AndroidAutoStub \
+	FilesGoogle \
+	Gmail2 \
+	GoogleFeedback \
+	Maps \
+	PersonalSafety \
+	talkback
 include $(BUILD_PREBUILT)
