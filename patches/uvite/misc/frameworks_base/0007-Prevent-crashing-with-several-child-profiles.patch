@@ -1,0 +1,113 @@
+From 80ddd841f38c6dcdefe87a236dacce5c7fb86bde Mon Sep 17 00:00:00 2001
+From: Tommy Webb <tommy@calyxinstitute.org>
+Date: Mon, 22 Jan 2024 12:59:51 -0500
+Subject: [PATCH] Prevent crashing with several child profiles
+
+Use a limited number of IPC threads, as the Permission module does.
+Some code is taken directly from AOSP's Permission module.
+
+This prevents Settings from crashing due to binder buffer space
+exhaustion when interacting with the apps list or its apps.
+
+See these relevant changes by Nate Myren <ntmyren@google.com>:
+- Title: Create "IPC" coroutine dispatcher
+  Change-Id: Ia3423c97ad5e75cd0636c2cf3c0bbd8a2737391f
+- Title: Flush binders in Async LiveData
+  Change-Id: If4561fd304adace419e27e871980322b3ccb8c04
+
+Issue: calyxos#2012
+Change-Id: If66ef779829791488b30cdf142e1b1d66b07c0fd
+---
+ .../model/app/AppListRepository.kt            | 32 +++++++++++++++----
+ 1 file changed, 26 insertions(+), 6 deletions(-)
+
+diff --git a/packages/SettingsLib/SpaPrivileged/src/com/android/settingslib/spaprivileged/model/app/AppListRepository.kt b/packages/SettingsLib/SpaPrivileged/src/com/android/settingslib/spaprivileged/model/app/AppListRepository.kt
+index 8e0cf894bb28..fb999a904f06 100644
+--- a/packages/SettingsLib/SpaPrivileged/src/com/android/settingslib/spaprivileged/model/app/AppListRepository.kt
++++ b/packages/SettingsLib/SpaPrivileged/src/com/android/settingslib/spaprivileged/model/app/AppListRepository.kt
+@@ -24,12 +24,27 @@ import android.content.pm.PackageManager.ApplicationInfoFlags
+ import android.content.pm.ResolveInfo
+ import com.android.internal.R
+ import com.android.settingslib.spaprivileged.framework.common.userManager
++import kotlinx.coroutines.asCoroutineDispatcher
+ import kotlinx.coroutines.async
+ import kotlinx.coroutines.awaitAll
+ import kotlinx.coroutines.coroutineScope
+ import kotlinx.coroutines.flow.Flow
+ import kotlinx.coroutines.flow.combine
+ import kotlinx.coroutines.runBlocking
++import kotlinx.coroutines.withContext
++import java.util.concurrent.Executors
++
++/**
++ * The number of threads in the IPC thread pool. If too many threads are used, it can lead to
++ * failed transactions as a result of running out of binder buffer space, for instance if a user
++ * has several child profiles. To avoid this, we deliberately choose a conservative thread count.
++ */
++const val IPC_THREAD_POOL_COUNT = 4
++
++/**
++ * A coroutine dispatcher with a fixed thread pool size, to be used for background tasks
++ */
++val IPC = Executors.newFixedThreadPool(IPC_THREAD_POOL_COUNT).asCoroutineDispatcher()
+ 
+ /**
+  * The repository to load the App List data.
+@@ -74,7 +89,7 @@ class AppListRepositoryImpl(private val context: Context) : AppListRepository {
+         loadInstantApps: Boolean,
+         matchAnyUserForAdmin: Boolean,
+     ): List<ApplicationInfo> = coroutineScope {
+-        val hiddenSystemModulesDeferred = async {
++        val hiddenSystemModulesDeferred = async(IPC) {
+             packageManager.getInstalledModules(0)
+                 .filter { it.isHidden }
+                 .map { it.packageName }
+@@ -102,14 +117,16 @@ class AppListRepositoryImpl(private val context: Context) : AppListRepository {
+                 PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS).toLong()
+         )
+         return if (!matchAnyUserForAdmin || !userManager.getUserInfo(userId).isAdmin) {
+-            packageManager.getInstalledApplicationsAsUser(regularFlags, userId)
++            withContext(IPC) {
++                packageManager.getInstalledApplicationsAsUser(regularFlags, userId)
++            }
+         } else {
+             coroutineScope {
+                 val deferredPackageNamesInChildProfiles =
+                     userManager.getProfileIdsWithDisabled(userId)
+                         .filter { it != userId }
+                         .map {
+-                            async {
++                            async(IPC) {
+                                 packageManager.getInstalledApplicationsAsUser(regularFlags, it)
+                                     .map { it.packageName }
+                             }
+@@ -117,8 +134,9 @@ class AppListRepositoryImpl(private val context: Context) : AppListRepository {
+                 val adminFlags = ApplicationInfoFlags.of(
+                     PackageManager.MATCH_ANY_USER.toLong() or regularFlags.value
+                 )
+-                val allInstalledApplications =
++                val allInstalledApplications = withContext(IPC) {
+                     packageManager.getInstalledApplicationsAsUser(adminFlags, userId)
++                }
+                 val packageNamesInChildProfiles = deferredPackageNamesInChildProfiles
+                     .awaitAll()
+                     .flatten()
+@@ -172,11 +190,13 @@ class AppListRepositoryImpl(private val context: Context) : AppListRepository {
+                 PackageManager.MATCH_DIRECT_BOOT_UNAWARE).toLong()
+         )
+         return coroutineScope {
+-            val launcherActivities = async {
++            val launcherActivities = async(IPC) {
+                 packageManager.queryIntentActivitiesAsUser(launchIntent, flags, userId)
+             }
+             val homeActivities = ArrayList<ResolveInfo>()
+-            packageManager.getHomeActivities(homeActivities)
++            withContext(IPC) {
++                packageManager.getHomeActivities(homeActivities)
++            }
+             (launcherActivities.await() + homeActivities)
+                 .map { it.activityInfo.packageName }
+                 .toSet()
+-- 
+2.43.0
+

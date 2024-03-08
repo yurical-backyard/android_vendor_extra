@@ -4,6 +4,9 @@
 # Build package remover
 PRODUCT_PACKAGES += package_remover
 
+# Build adb_root
+PRODUCT_PACKAGES += adb_root
+
 # Inherit main Makefile
 $(call inherit-product, vendor/extra/configs/main.mk)
 
@@ -24,3 +27,7 @@ ifeq ($(WITH_GMS),true)
 $(call inherit-product, vendor/google/gms/config.mk)
 $(call inherit-product, vendor/google/pixel/config.mk)
 endif
+
+# Additional SEPolicy
+SYSTEM_EXT_PRIVATE_SEPOLICY_DIRS += \
+    vendor/extra/sepolicy/private

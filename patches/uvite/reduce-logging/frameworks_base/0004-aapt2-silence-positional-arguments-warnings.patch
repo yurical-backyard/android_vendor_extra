@@ -1,0 +1,43 @@
+From 651605c6213decf5ce434f7dea7cfc4e653a5684 Mon Sep 17 00:00:00 2001
+From: Park Ju Hyung <qkrwngud825@gmail.com>
+Date: Tue, 7 Jan 2020 00:41:50 +0900
+Subject: [PATCH] aapt2: silence positional arguments warnings
+
+These warnings take up significant portion of the entire stderr output
+during builds, and aren't important at all.
+
+Silence it so that other more meaningful stderr outputs could be noticed.
+
+Change-Id: If05955a6c392f3d5bfe0a4e2b424da2a08fc2f75
+Signed-off-by: Park Ju Hyung <qkrwngud825@gmail.com>
+---
+ tools/aapt2/ResourceParser.cpp | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/tools/aapt2/ResourceParser.cpp b/tools/aapt2/ResourceParser.cpp
+index fa9a98f136cb..6587a96669d5 100644
+--- a/tools/aapt2/ResourceParser.cpp
++++ b/tools/aapt2/ResourceParser.cpp
+@@ -866,15 +866,14 @@ bool ResourceParser::ParseString(xml::XmlPullParser* parser,
+ 
+     if (formatted && translatable) {
+       if (!util::VerifyJavaStringFormat(*string_value->value)) {
+-        android::DiagMessage msg(out_resource->source);
+-        msg << "multiple substitutions specified in non-positional format; "
+-               "did you mean to add the formatted=\"false\" attribute?";
+         if (options_.error_on_positional_arguments) {
++          android::DiagMessage msg(out_resource->source);
++          msg << "multiple substitutions specified in non-positional format; "
++                 "did you mean to add the formatted=\"false\" attribute?";
++
+           diag_->Error(msg);
+           return false;
+         }
+-
+-        diag_->Warn(msg);
+       }
+     }
+ 
+-- 
+2.43.0
+

@@ -1,0 +1,35 @@
+From 3de97ea59ebf11323b4187c25faf20c89abe2449 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sat, 17 Jun 2023 15:54:41 +0800
+Subject: [PATCH] WindowManagerService: Fix IndexOutOfBoundsException
+ when traversing AppFreezeListener
+
+Suggested by: Riddle Hsu <riddlehsu@google.com>
+
+Change-Id: I4573d68568e3293074efa66914880385fc2afbc4
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Anushek Prasal <anushekprasal@gmail.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../java/com/android/server/wm/WindowManagerService.java     | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/wm/WindowManagerService.java b/services/core/java/com/android/server/wm/WindowManagerService.java
+index bfa0b34fd0b6..e11b8ae17b23 100644
+--- a/services/core/java/com/android/server/wm/WindowManagerService.java
++++ b/services/core/java/com/android/server/wm/WindowManagerService.java
+@@ -5466,8 +5466,9 @@ public class WindowManagerService extends IWindowManager.Stub
+                     synchronized (mGlobalLock) {
+                         ProtoLog.w(WM_ERROR, "App freeze timeout expired.");
+                         mWindowsFreezingScreen = WINDOWS_FREEZING_SCREENS_TIMEOUT;
+-                        for (int i = mAppFreezeListeners.size() - 1; i >= 0; --i) {
+-                            mAppFreezeListeners.get(i).onAppFreezeTimeout();
++                        List<AppFreezeListener> listenersCopy = new ArrayList<>(mAppFreezeListeners);
++                        for (int i = listenersCopy.size() - 1; i >= 0; --i) {
++                            listenersCopy.get(i).onAppFreezeTimeout();
+                         }
+                     }
+                     break;
+-- 
+2.43.0
+

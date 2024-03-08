@@ -1,0 +1,198 @@
+From 7af9e32e91fd8cabc1dc07a7fe1b543f52180feb Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 21:01:53 +0800
+Subject: [PATCH] Revert "Create selector colors for dialog buttons"
+
+This reverts commit a5aba8f57008896c47a97faa20139afec43fb79f.
+
+Change-Id: I651d18b6705c51bfc1f7efdb253285c1ffddd2ea
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../qs_dialog_btn_filled_large_background.xml | 22 ------------------
+ .../color/qs_dialog_btn_filled_large_text.xml | 22 ------------------
+ .../res/color/qs_dialog_btn_outline.xml       | 23 -------------------
+ .../res/color/qs_dialog_btn_outline_text.xml  | 23 -------------------
+ .../drawable/qs_dialog_btn_filled_large.xml   |  2 +-
+ .../res/drawable/qs_dialog_btn_outline.xml    |  3 ++-
+ packages/SystemUI/res/values/styles.xml       |  4 ++--
+ 7 files changed, 5 insertions(+), 94 deletions(-)
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_filled_large_background.xml
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_filled_large_text.xml
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_outline.xml
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_outline_text.xml
+
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_filled_large_background.xml b/packages/SystemUI/res/color/qs_dialog_btn_filled_large_background.xml
+deleted file mode 100644
+index f8d4af57229b..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_filled_large_background.xml
++++ /dev/null
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?><!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-        android:color="?androidprv:attr/materialColorPrimaryFixed"
+-        android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorPrimaryFixed"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_filled_large_text.xml b/packages/SystemUI/res/color/qs_dialog_btn_filled_large_text.xml
+deleted file mode 100644
+index faba8fc4c755..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_filled_large_text.xml
++++ /dev/null
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?><!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-        android:color="?androidprv:attr/materialColorOnPrimaryFixed"
+-        android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorOnPrimaryFixed"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_outline.xml b/packages/SystemUI/res/color/qs_dialog_btn_outline.xml
+deleted file mode 100644
+index 1adfe5b19d70..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_outline.xml
++++ /dev/null
+@@ -1,23 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?><!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-        android:color="?androidprv:attr/materialColorPrimary"
+-        android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorPrimary"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_outline_text.xml b/packages/SystemUI/res/color/qs_dialog_btn_outline_text.xml
+deleted file mode 100644
+index 5dc994f23f2b..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_outline_text.xml
++++ /dev/null
+@@ -1,23 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?><!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-        android:color="?androidprv:attr/materialColorOnSurface"
+-        android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorOnSurface"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
+index 50405cab3b95..1590daa8b7f9 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
+@@ -26,7 +26,7 @@
+     <item>
+         <shape android:shape="rectangle">
+             <corners android:radius="18dp"/>
+-            <solid android:color="@color/qs_dialog_btn_filled_large_background"/>
++            <solid android:color="?androidprv:attr/materialColorPrimaryFixed"/>
+         </shape>
+     </item>
+ </ripple>
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
+index 9e9533aa2052..b0dc6523e971 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
+@@ -15,6 +15,7 @@
+   ~ limitations under the License.
+   -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android"
++       xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+        android:insetTop="@dimen/dialog_button_vertical_inset"
+        android:insetBottom="@dimen/dialog_button_vertical_inset">
+     <ripple android:color="?android:attr/colorControlHighlight">
+@@ -28,7 +29,7 @@
+             <shape android:shape="rectangle">
+                 <corners android:radius="?android:attr/buttonCornerRadius"/>
+                 <solid android:color="@android:color/transparent"/>
+-                <stroke android:color="@color/qs_dialog_btn_outline"
++                <stroke android:color="?androidprv:attr/materialColorPrimary"
+                         android:width="1dp"
+                 />
+                 <padding android:left="@dimen/dialog_button_horizontal_padding"
+diff --git a/packages/SystemUI/res/values/styles.xml b/packages/SystemUI/res/values/styles.xml
+index 941fcb5980f2..e9ef2ae63eb8 100644
+--- a/packages/SystemUI/res/values/styles.xml
++++ b/packages/SystemUI/res/values/styles.xml
+@@ -1111,13 +1111,13 @@
+ 
+     <style name="Widget.Dialog.Button.BorderButton">
+         <item name="android:background">@drawable/qs_dialog_btn_outline</item>
+-        <item name="android:textColor">@color/qs_dialog_btn_outline_text</item>
++        <item name="android:textColor">?androidprv:attr/materialColorOnSurface</item>
+     </style>
+ 
+     <style name="Widget.Dialog.Button.Large">
+         <item name="android:background">@drawable/qs_dialog_btn_filled_large</item>
+         <item name="android:minHeight">56dp</item>
+-        <item name="android:textColor">@color/qs_dialog_btn_filled_large_text</item>
++        <item name="android:textColor">?androidprv:attr/materialColorOnPrimaryFixed</item>
+     </style>
+ 
+     <style name="MainSwitch.Settingslib" parent="@android:style/Theme.DeviceDefault">
+-- 
+2.43.0
+

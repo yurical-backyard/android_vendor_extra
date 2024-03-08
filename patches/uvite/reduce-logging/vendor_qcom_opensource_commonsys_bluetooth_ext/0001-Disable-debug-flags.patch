@@ -1,0 +1,81 @@
+From 127a5666e9688dfd0e80ac4ff28d798ddc1d1b5a Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sun, 17 Mar 2024 01:55:49 +0900
+Subject: [PATCH] Disable debug flags
+
+---
+ .../src/avrcp/AddressedMediaPlayer_ext.java                     | 2 +-
+ .../src/avrcp/AvrcpPlayerAppSettings.java                       | 2 +-
+ .../src/avrcp/AvrcpTgBipStateMachine.java                       | 2 +-
+ packages_apps_bluetooth_ext/src/avrcp/Avrcp_ext.java            | 2 +-
+ .../src/avrcp/BrowsedMediaPlayer_ext.java                       | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/packages_apps_bluetooth_ext/src/avrcp/AddressedMediaPlayer_ext.java b/packages_apps_bluetooth_ext/src/avrcp/AddressedMediaPlayer_ext.java
+index 7e46832..e17b143 100644
+--- a/packages_apps_bluetooth_ext/src/avrcp/AddressedMediaPlayer_ext.java
++++ b/packages_apps_bluetooth_ext/src/avrcp/AddressedMediaPlayer_ext.java
+@@ -43,7 +43,7 @@ import java.util.List;
+ 
+ public class AddressedMediaPlayer_ext {
+     private static final String TAG = "AddressedMediaPlayer_ext";
+-    private static final Boolean DEBUG = true;
++    private static final Boolean DEBUG = false;
+ 
+     private static final long SINGLE_QID = 1;
+     private static final String UNKNOWN_TITLE = "(unknown)";
+diff --git a/packages_apps_bluetooth_ext/src/avrcp/AvrcpPlayerAppSettings.java b/packages_apps_bluetooth_ext/src/avrcp/AvrcpPlayerAppSettings.java
+index 53545e1..baa153e 100644
+--- a/packages_apps_bluetooth_ext/src/avrcp/AvrcpPlayerAppSettings.java
++++ b/packages_apps_bluetooth_ext/src/avrcp/AvrcpPlayerAppSettings.java
+@@ -48,7 +48,7 @@ import java.util.Iterator;
+ import android.os.SystemProperties;
+ 
+ public class AvrcpPlayerAppSettings {
+-    private static final boolean DEBUG = true;
++    private static final boolean DEBUG = false;
+     private static final String TAG = "AvrcpPlayerAppSettings";
+ 
+     private boolean mIsRegisterd;
+diff --git a/packages_apps_bluetooth_ext/src/avrcp/AvrcpTgBipStateMachine.java b/packages_apps_bluetooth_ext/src/avrcp/AvrcpTgBipStateMachine.java
+index c8633a9..b45bc9a 100644
+--- a/packages_apps_bluetooth_ext/src/avrcp/AvrcpTgBipStateMachine.java
++++ b/packages_apps_bluetooth_ext/src/avrcp/AvrcpTgBipStateMachine.java
+@@ -54,7 +54,7 @@ import android.util.Log;
+  */
+ public class AvrcpTgBipStateMachine extends StateMachine {
+     private String TAG = "AvrcpBipSM";
+-    private final boolean DEBUG = true;
++    private final boolean DEBUG = false;
+     static final int DISCONNECT = 1;
+     private Context mCtx;
+     private final Finished mFinished = new Finished();
+diff --git a/packages_apps_bluetooth_ext/src/avrcp/Avrcp_ext.java b/packages_apps_bluetooth_ext/src/avrcp/Avrcp_ext.java
+index 0b7df2b..ee0e5eb 100644
+--- a/packages_apps_bluetooth_ext/src/avrcp/Avrcp_ext.java
++++ b/packages_apps_bluetooth_ext/src/avrcp/Avrcp_ext.java
+@@ -114,7 +114,7 @@ import java.lang.reflect.*;
+  ******************************************************************************/
+ 
+ public final class Avrcp_ext {
+-    private static final boolean DEBUG = true;
++    private static final boolean DEBUG = false;
+     private static final String TAG = "Avrcp_ext";
+     private static final String ABSOLUTE_VOLUME_BLACKLIST = "absolute_volume_blacklist";
+     private static final String AVRCP_VERSION_PROPERTY = "persist.bluetooth.avrcpversion";
+diff --git a/packages_apps_bluetooth_ext/src/avrcp/BrowsedMediaPlayer_ext.java b/packages_apps_bluetooth_ext/src/avrcp/BrowsedMediaPlayer_ext.java
+index 3e66b99..2d0f919 100644
+--- a/packages_apps_bluetooth_ext/src/avrcp/BrowsedMediaPlayer_ext.java
++++ b/packages_apps_bluetooth_ext/src/avrcp/BrowsedMediaPlayer_ext.java
+@@ -41,7 +41,7 @@ import java.util.Stack;
+  ************************************************************************************************/
+ 
+ class BrowsedMediaPlayer_ext {
+-    private static final boolean DEBUG = true;
++    private static final boolean DEBUG = false;
+     private static final String TAG = "BrowsedMediaPlayer_ext";
+ 
+     /* connection state with MediaBrowseService */
+-- 
+2.43.0
+

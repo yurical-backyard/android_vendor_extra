@@ -1,0 +1,42 @@
+From 91cda5edbe0a3ef600c246d41eb22ecbd1336bd5 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sun, 10 Mar 2024 18:39:30 +0900
+Subject: [PATCH] base: TelephonyManager: Do not throw exception when
+ service is null
+
+--------- beginning of crash
+03-10 04:09:21.312  4957  5173 E TelephonyManager: Error calling #isDataEnabled, returning default (false).
+03-10 04:09:21.312  4957  5173 E TelephonyManager: java.lang.IllegalStateException: telephony service is null.
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at android.telephony.TelephonyManager.isDataEnabledForReason(TelephonyManager.java:13791)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at android.telephony.TelephonyManager.isDataEnabledForReason(TelephonyManager.java:13782)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at android.telephony.TelephonyManager.isDataEnabled(TelephonyManager.java:11103)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at fayi.a(PG:23)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at fbov.call(PG:2)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at java.util.concurrent.FutureTask.run(FutureTask.java:264)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at ewai.run(PG:1)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at evzn.run(PG:2)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at java.lang.Thread.run(Thread.java:1012)
+03-10 04:09:21.312  4957  5173 E TelephonyManager: 	at ewar.run(PG:5)
+---
+ telephony/java/android/telephony/TelephonyManager.java | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/telephony/java/android/telephony/TelephonyManager.java b/telephony/java/android/telephony/TelephonyManager.java
+index 7c7eb5f377a9..fa637f328bce 100644
+--- a/telephony/java/android/telephony/TelephonyManager.java
++++ b/telephony/java/android/telephony/TelephonyManager.java
+@@ -13788,7 +13788,8 @@ public class TelephonyManager {
+             if (service != null) {
+                 return service.isDataEnabledForReason(subId, reason);
+             } else {
+-                throw new IllegalStateException("telephony service is null.");
++                Log.d(TAG, "telephony service is null.");
++                return false;
+             }
+         } catch (RemoteException ex) {
+             Log.e(TAG, "Telephony#isDataEnabledForReason RemoteException", ex);
+-- 
+2.43.0
+

@@ -1,0 +1,1030 @@
+From 93db716457df12673983694f2d46000774d310ca Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 20:47:28 +0800
+Subject: [PATCH] Revert "Migrate to new color tokens"
+
+This reverts commit 857efe6579680ab9efd92456efa3e16729307ae1.
+
+Change-Id: I62234d0d7c9e9565821ab8f7f5bf3d178271db8f
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../qs/footer/ui/compose/FooterActions.kt     | 17 ++---
+ .../res-keyguard/color/shade_disabled.xml     | 19 ------
+ .../layout/footer_actions_number_button.xml   |  2 +-
+ .../layout/footer_actions_text_button.xml     |  6 +-
+ .../drawable/brightness_mirror_background.xml |  2 +-
+ .../drawable/brightness_progress_drawable.xml |  2 +-
+ .../brightness_progress_full_drawable.xml     |  4 +-
+ packages/SystemUI/res/drawable/fgs_dot.xml    |  2 +-
+ .../qs_customizer_background_primary.xml      |  2 +-
+ .../res/drawable/qs_customizer_toolbar.xml    |  2 +-
+ .../res/drawable/qs_footer_action_circle.xml  |  2 +-
+ .../qs_footer_action_circle_color.xml         |  2 +-
+ .../drawable/qs_footer_actions_background.xml |  2 +-
+ .../qs_security_footer_background.xml         |  2 +-
+ .../SystemUI/res/layout/qs_footer_impl.xml    |  3 +-
+ .../SystemUI/res/layout/qs_tile_label.xml     |  2 +-
+ packages/SystemUI/res/values/attrs.xml        | 21 +------
+ packages/SystemUI/res/values/styles.xml       | 62 +++++--------------
+ .../systemui/qs/external/TileRequestDialog.kt |  4 +-
+ .../ui/binder/FooterActionsViewBinder.kt      |  4 +-
+ .../ui/viewmodel/FooterActionsViewModel.kt    | 14 ++---
+ .../systemui/qs/tileimpl/QSIconViewImpl.java  |  8 ++-
+ .../systemui/qs/tileimpl/QSTileViewImpl.kt    | 27 ++++----
+ .../com/android/systemui/qs/QSPanelTest.kt    | 35 ++++-------
+ .../android/systemui/qs/TileLayoutTest.java   | 30 ++++-----
+ .../viewmodel/FooterActionsViewModelTest.kt   | 21 ++-----
+ .../qs/tileimpl/QSTileViewImplTest.kt         |  7 +--
+ .../android/systemui/qs/tiles/DndTileTest.kt  |  5 +-
+ .../shade/carrier/ShadeCarrierTest.java       |  6 +-
+ 29 files changed, 102 insertions(+), 213 deletions(-)
+ delete mode 100644 packages/SystemUI/res-keyguard/color/shade_disabled.xml
+
+diff --git a/packages/SystemUI/compose/features/src/com/android/systemui/qs/footer/ui/compose/FooterActions.kt b/packages/SystemUI/compose/features/src/com/android/systemui/qs/footer/ui/compose/FooterActions.kt
+index 13acde206247..75bf2813a321 100644
+--- a/packages/SystemUI/compose/features/src/com/android/systemui/qs/footer/ui/compose/FooterActions.kt
++++ b/packages/SystemUI/compose/features/src/com/android/systemui/qs/footer/ui/compose/FooterActions.kt
+@@ -121,8 +121,8 @@ fun FooterActions(
+         }
+     }
+ 
+-    val backgroundColor = colorAttr(R.attr.underSurface)
+-    val contentColor = LocalAndroidColorScheme.current.onSurface
++    val backgroundColor = colorAttr(R.attr.underSurfaceColor)
++    val contentColor = LocalAndroidColorScheme.current.deprecated.textColorPrimary
+     val backgroundTopRadius = dimensionResource(R.dimen.qs_corner_radius)
+     val backgroundModifier =
+         remember(
+@@ -268,7 +268,7 @@ private fun NumberButton(
+     val interactionSource = remember { MutableInteractionSource() }
+ 
+     Expandable(
+-        color = colorAttr(R.attr.shadeInactive),
++        color = colorAttr(R.attr.offStateColor),
+         shape = CircleShape,
+         onClick = onClick,
+         interactionSource = interactionSource,
+@@ -287,7 +287,7 @@ private fun NumberButton(
+                     number.toString(),
+                     modifier = Modifier.align(Alignment.Center),
+                     style = MaterialTheme.typography.bodyLarge,
+-                    color = colorAttr(R.attr.onShadeInactiveVariant),
++                    color = LocalAndroidColorScheme.current.deprecated.textColorPrimary,
+                     // TODO(b/242040009): This should only use a standard text style instead and
+                     // should not override the text size.
+                     fontSize = 18.sp,
+@@ -305,7 +305,7 @@ private fun NumberButton(
+ @Composable
+ private fun NewChangesDot(modifier: Modifier = Modifier) {
+     val contentDescription = stringResource(R.string.fgs_dot_content_description)
+-    val color = LocalAndroidColorScheme.current.tertiary
++    val color = LocalAndroidColorScheme.current.deprecated.colorAccentTertiary
+ 
+     Canvas(modifier.size(12.dp).semantics { this.contentDescription = contentDescription }) {
+         drawCircle(color)
+@@ -323,9 +323,10 @@ private fun TextButton(
+ ) {
+     Expandable(
+         shape = CircleShape,
+-        color = colorAttr(R.attr.underSurface),
+-        contentColor = LocalAndroidColorScheme.current.onSurfaceVariant,
+-        borderStroke = BorderStroke(1.dp, colorAttr(R.attr.onShadeActive)),
++        color = colorAttr(R.attr.underSurfaceColor),
++        contentColor = LocalAndroidColorScheme.current.deprecated.textColorSecondary,
++        borderStroke =
++            BorderStroke(1.dp, LocalAndroidColorScheme.current.deprecated.colorBackground),
+         modifier = modifier.padding(horizontal = 4.dp),
+         onClick = onClick,
+     ) {
+diff --git a/packages/SystemUI/res-keyguard/color/shade_disabled.xml b/packages/SystemUI/res-keyguard/color/shade_disabled.xml
+deleted file mode 100644
+index 241f20385eb4..000000000000
+--- a/packages/SystemUI/res-keyguard/color/shade_disabled.xml
++++ /dev/null
+@@ -1,19 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?><!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~     http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-
+-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+-    <item android:color="@android:color/system_neutral1_500" android:lStar="4" />
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res-keyguard/layout/footer_actions_number_button.xml b/packages/SystemUI/res-keyguard/layout/footer_actions_number_button.xml
+index c09607d19bdd..a7ffe9ca256f 100644
+--- a/packages/SystemUI/res-keyguard/layout/footer_actions_number_button.xml
++++ b/packages/SystemUI/res-keyguard/layout/footer_actions_number_button.xml
+@@ -26,7 +26,7 @@
+         android:layout_height="wrap_content"
+         android:textAppearance="@style/TextAppearance.QS.SecurityFooter"
+         android:layout_gravity="center"
+-        android:textColor="?attr/onShadeInactiveVariant"
++        android:textColor="?android:attr/textColorPrimary"
+         android:textSize="18sp"/>
+     <ImageView
+         android:id="@+id/new_dot"
+diff --git a/packages/SystemUI/res-keyguard/layout/footer_actions_text_button.xml b/packages/SystemUI/res-keyguard/layout/footer_actions_text_button.xml
+index 1c31f1da0681..6fe7d39f748a 100644
+--- a/packages/SystemUI/res-keyguard/layout/footer_actions_text_button.xml
++++ b/packages/SystemUI/res-keyguard/layout/footer_actions_text_button.xml
+@@ -33,7 +33,7 @@
+         android:layout_marginEnd="12dp"
+         android:contentDescription="@null"
+         android:src="@drawable/ic_info_outline"
+-        android:tint="?attr/onSurfaceVariant" />
++        android:tint="?android:attr/textColorSecondary" />
+ 
+     <TextView
+         android:id="@+id/text"
+@@ -43,7 +43,7 @@
+         android:maxLines="1"
+         android:ellipsize="end"
+         android:textAppearance="@style/TextAppearance.QS.SecurityFooter"
+-        android:textColor="?attr/onSurfaceVariant"/>
++        android:textColor="?android:attr/textColorSecondary"/>
+ 
+     <ImageView
+         android:id="@+id/new_dot"
+@@ -62,5 +62,5 @@
+         android:contentDescription="@null"
+         android:src="@*android:drawable/ic_chevron_end"
+         android:autoMirrored="true"
+-        android:tint="?attr/onSurfaceVariant" />
++        android:tint="?android:attr/textColorSecondary" />
+ </com.android.systemui.animation.view.LaunchableLinearLayout>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/brightness_mirror_background.xml b/packages/SystemUI/res/drawable/brightness_mirror_background.xml
+index b5c181bd896c..209510365fe0 100644
+--- a/packages/SystemUI/res/drawable/brightness_mirror_background.xml
++++ b/packages/SystemUI/res/drawable/brightness_mirror_background.xml
+@@ -15,6 +15,6 @@
+   ~ limitations under the License
+   -->
+ <shape xmlns:android="http://schemas.android.com/apk/res/android">
+-    <solid android:color="?attr/underSurface" />
++    <solid android:color="?attr/underSurfaceColor" />
+     <corners android:radius="@dimen/rounded_slider_background_rounded_corner" />
+ </shape>
+diff --git a/packages/SystemUI/res/drawable/brightness_progress_drawable.xml b/packages/SystemUI/res/drawable/brightness_progress_drawable.xml
+index 95c7778c0e76..569ee76586c2 100644
+--- a/packages/SystemUI/res/drawable/brightness_progress_drawable.xml
++++ b/packages/SystemUI/res/drawable/brightness_progress_drawable.xml
+@@ -24,7 +24,7 @@
+             <shape>
+                 <size android:height="@dimen/rounded_slider_track_width" />
+                 <corners android:radius="@dimen/rounded_slider_track_corner_radius" />
+-                <solid android:color="?attr/shadeInactive" />
++                <solid android:color="?attr/offStateColor" />
+             </shape>
+         </inset>
+     </item>
+diff --git a/packages/SystemUI/res/drawable/brightness_progress_full_drawable.xml b/packages/SystemUI/res/drawable/brightness_progress_full_drawable.xml
+index a9e7adf668a9..c180fefabee4 100644
+--- a/packages/SystemUI/res/drawable/brightness_progress_full_drawable.xml
++++ b/packages/SystemUI/res/drawable/brightness_progress_full_drawable.xml
+@@ -22,7 +22,7 @@
+         android:height="@dimen/rounded_slider_height">
+         <shape>
+             <size android:height="@dimen/rounded_slider_height" />
+-            <solid android:color="?attr/shadeActive" />
++            <solid android:color="?priv-android:attr/colorAccentPrimary" />
+             <corners android:radius="@dimen/rounded_slider_corner_radius"/>
+         </shape>
+     </item>
+@@ -41,7 +41,7 @@
+         android:right="@dimen/rounded_slider_icon_inset">
+         <com.android.systemui.util.AlphaTintDrawableWrapper
+             android:drawable="@drawable/ic_brightness"
+-            android:tint="?attr/onShadeActive"
++            android:tint="?android:attr/textColorPrimaryInverse"
+         />
+     </item>
+ </layer-list>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/fgs_dot.xml b/packages/SystemUI/res/drawable/fgs_dot.xml
+index 0881d7c5c2b5..3669e1d3c374 100644
+--- a/packages/SystemUI/res/drawable/fgs_dot.xml
++++ b/packages/SystemUI/res/drawable/fgs_dot.xml
+@@ -19,5 +19,5 @@
+     android:shape="oval"
+     android:width="12dp"
+     android:height="12dp">
+-    <solid android:color="?attr/tertiary" />
++    <solid android:color="?androidprv:attr/colorAccentTertiary" />
+ </shape>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/qs_customizer_background_primary.xml b/packages/SystemUI/res/drawable/qs_customizer_background_primary.xml
+index e138d094f869..ea0aafd321e1 100644
+--- a/packages/SystemUI/res/drawable/qs_customizer_background_primary.xml
++++ b/packages/SystemUI/res/drawable/qs_customizer_background_primary.xml
+@@ -15,7 +15,7 @@
+ -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android">
+     <shape>
+-        <solid android:color="?attr/underSurface"/>
++        <solid android:color="?attr/underSurfaceColor"/>
+         <corners android:radius="?android:attr/dialogCornerRadius" />
+     </shape>
+ </inset>
+diff --git a/packages/SystemUI/res/drawable/qs_customizer_toolbar.xml b/packages/SystemUI/res/drawable/qs_customizer_toolbar.xml
+index f1a24aa7af9d..ef950fe67ad2 100644
+--- a/packages/SystemUI/res/drawable/qs_customizer_toolbar.xml
++++ b/packages/SystemUI/res/drawable/qs_customizer_toolbar.xml
+@@ -15,6 +15,6 @@
+ -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android">
+     <shape>
+-        <solid android:color="?attr/underSurface"/>
++        <solid android:color="?attr/underSurfaceColor"/>
+     </shape>
+ </inset>
+diff --git a/packages/SystemUI/res/drawable/qs_footer_action_circle.xml b/packages/SystemUI/res/drawable/qs_footer_action_circle.xml
+index 4a5d4af96497..c8c36b0081c0 100644
+--- a/packages/SystemUI/res/drawable/qs_footer_action_circle.xml
++++ b/packages/SystemUI/res/drawable/qs_footer_action_circle.xml
+@@ -28,7 +28,7 @@
+         </item>
+         <item>
+             <shape android:shape="rectangle">
+-                <solid android:color="?attr/shadeInactive"/>
++                <solid android:color="?attr/offStateColor"/>
+                 <corners android:radius="@dimen/qs_footer_action_corner_radius"/>
+             </shape>
+         </item>
+diff --git a/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml b/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
+index 47a2965bcfac..83ef24c2db53 100644
+--- a/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
++++ b/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
+@@ -28,7 +28,7 @@
+         </item>
+         <item>
+             <shape android:shape="rectangle">
+-                <solid android:color="?attr/shadeActive"/>
++                <solid android:color="?android:attr/colorAccent"/>
+                 <corners android:radius="@dimen/qs_footer_action_corner_radius"/>
+             </shape>
+         </item>
+diff --git a/packages/SystemUI/res/drawable/qs_footer_actions_background.xml b/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
+index a7e8762a2593..c9517cd905dc 100644
+--- a/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
++++ b/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
+@@ -15,7 +15,7 @@
+ -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android">
+     <shape>
+-        <solid android:color="?attr/underSurface"/>
++        <solid android:color="?attr/underSurfaceColor"/>
+         <corners android:topLeftRadius="@dimen/qs_corner_radius"
+                  android:topRightRadius="@dimen/qs_corner_radius"/>
+     </shape>
+diff --git a/packages/SystemUI/res/drawable/qs_security_footer_background.xml b/packages/SystemUI/res/drawable/qs_security_footer_background.xml
+index 0b0055b1f020..381af503d47c 100644
+--- a/packages/SystemUI/res/drawable/qs_security_footer_background.xml
++++ b/packages/SystemUI/res/drawable/qs_security_footer_background.xml
+@@ -29,7 +29,7 @@
+         <item>
+             <shape android:shape="rectangle">
+                 <stroke android:width="1dp"
+-                        android:color="?attr/shadeInactive"/>
++                        android:color="?android:attr/colorBackground"/>
+                 <corners android:radius="@dimen/qs_security_footer_corner_radius"/>
+             </shape>
+         </item>
+diff --git a/packages/SystemUI/res/layout/qs_footer_impl.xml b/packages/SystemUI/res/layout/qs_footer_impl.xml
+index b8f4c0f212c3..745cfc6c1655 100644
+--- a/packages/SystemUI/res/layout/qs_footer_impl.xml
++++ b/packages/SystemUI/res/layout/qs_footer_impl.xml
+@@ -53,7 +53,6 @@
+                 android:layout_width="wrap_content"
+                 android:layout_height="match_parent"
+                 android:layout_gravity="center_vertical"
+-                android:tint="?attr/shadeActive"
+                 android:visibility="gone" />
+ 
+             <FrameLayout
+@@ -71,7 +70,7 @@
+                     android:focusable="true"
+                     android:padding="@dimen/qs_footer_icon_padding"
+                     android:src="@*android:drawable/ic_mode_edit"
+-                    android:tint="?attr/onSurfaceVariant" />
++                    android:tint="?android:attr/textColorPrimary" />
+             </FrameLayout>
+ 
+         </LinearLayout>
+diff --git a/packages/SystemUI/res/layout/qs_tile_label.xml b/packages/SystemUI/res/layout/qs_tile_label.xml
+index 974cad32f937..c124aea01afc 100644
+--- a/packages/SystemUI/res/layout/qs_tile_label.xml
++++ b/packages/SystemUI/res/layout/qs_tile_label.xml
+@@ -54,6 +54,6 @@
+         android:focusable="false"
+         android:importantForAccessibility="no"
+         android:textAppearance="@style/TextAppearance.QS.TileLabel.Secondary"
+-        android:textColor="?attr/onShadeInactive"/>
++        android:textColor="?android:attr/textColorSecondary"/>
+ 
+ </com.android.systemui.qs.tileimpl.IgnorableChildLinearLayout>
+diff --git a/packages/SystemUI/res/values/attrs.xml b/packages/SystemUI/res/values/attrs.xml
+index d693631080af..3a1d1a8cbf9d 100644
+--- a/packages/SystemUI/res/values/attrs.xml
++++ b/packages/SystemUI/res/values/attrs.xml
+@@ -118,25 +118,8 @@
+     <attr name="wallpaperTextColorSecondary" format="reference|color" />
+     <attr name="wallpaperTextColorAccent" format="reference|color" />
+     <attr name="backgroundProtectedStyle" format="reference" />
+-
+-    <!-- color attribute tokens for QS -->
+-    <attr name="isQsTheme" format="boolean" />
+-    <attr name="underSurface" format="reference|color"/>
+-    <attr name="shadeActive" format="reference|color" />
+-    <attr name="onShadeActive" format="reference|color" />
+-    <attr name="onShadeActiveVariant" format="reference|color" />
+-    <attr name="shadeInactive" format="reference|color" />
+-    <attr name="onShadeInactive" format="reference|color" />
+-    <attr name="onShadeInactiveVariant" format="reference|color" />
+-    <attr name="shadeDisabled" format="reference|color" />
+-    <attr name="surfaceBright" format="reference|color" />
+-    <attr name="scHigh" format="reference|color" />
+-    <attr name="tertiary" format="reference|color" />
+-    <attr name="onSurface" format="reference|color" />
+-    <attr name="onSurfaceVariant" format="reference|color" />
+-    <attr name="outline" format="reference|color" />
+-    <attr name="primary" format="reference|color" />
+-
++    <attr name="offStateColor" format="reference|color" />
++    <attr name="underSurfaceColor" format="reference|color" />
+ 
+     <declare-styleable name="SmartReplyView">
+         <attr name="spacing" format="dimension" />
+diff --git a/packages/SystemUI/res/values/styles.xml b/packages/SystemUI/res/values/styles.xml
+index b0d3adbf5226..941fcb5980f2 100644
+--- a/packages/SystemUI/res/values/styles.xml
++++ b/packages/SystemUI/res/values/styles.xml
+@@ -91,7 +91,7 @@
+ 
+     <style name="TextAppearance.QS">
+         <item name="android:textStyle">normal</item>
+-        <item name="android:textColor">?attr/onShadeInactive</item>
++        <item name="android:textColor">?android:attr/textColorPrimary</item>
+         <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ 
+@@ -101,7 +101,7 @@
+ 
+     <style name="TextAppearance.QS.DetailItemSecondary">
+         <item name="android:textSize">@dimen/qs_tile_text_size</item>
+-        <item name="android:textColor">?attr/shadeActive</item>
++        <item name="android:textColor">?android:attr/colorAccent</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.Introduction">
+@@ -125,11 +125,11 @@
+ 
+     <style name="TextAppearance.QS.DataUsage.Usage">
+         <item name="android:textSize">@dimen/qs_data_usage_usage_text_size</item>
+-        <item name="android:textColor">?attr/shadeActive</item>
++        <item name="android:textColor">?android:attr/colorAccent</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.DataUsage.Secondary">
+-        <item name="android:textColor">?attr/onShadeInactiveVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.TileLabel">
+@@ -145,31 +145,31 @@
+ 
+     <style name="TextAppearance.QS.UserSwitcher">
+         <item name="android:textSize">@dimen/qs_tile_text_size</item>
+-        <item name="android:textColor">?androidprv:attr/materialColorOnSurfaceVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <!-- This is hard coded to be sans-serif-condensed to match the icons -->
+ 
+     <style name="TextAppearance.QS.Status">
+         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+-        <item name="android:textColor">?attr/onSurface</item>
++        <item name="android:textColor">?android:attr/textColorPrimary</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:letterSpacing">0.01</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.SecurityFooter" parent="@style/TextAppearance.QS.Status">
+         <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+-        <item name="android:textColor">?attr/onSurface</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.Status.Carriers" />
+ 
+     <style name="TextAppearance.QS.Status.Carriers.NoCarrierText">
+-        <item name="android:textColor">?attr/onSurfaceVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <style name="TextAppearance.QS.Status.Build">
+-        <item name="android:textColor">?attr/onSurfaceVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <style name="TextAppearance.DeviceManagementDialog.Title" parent="@android:style/TextAppearance.DeviceDefault.DialogWindowTitle"/>
+@@ -286,10 +286,10 @@
+ 
+     <style name="DeviceManagementDialogTitle">
+         <item name="android:gravity">center</item>
+-        <item name="android:textAppearance">@style/TextAppearance.Dialog.Title</item>
++        <item name="android:textAppearance">@style/TextAppearance.DeviceManagementDialog.Title</item>
+     </style>
+ 
+-    <style name="TextAppearance.DeviceManagementDialog.Content" parent="@style/TextAppearance.Dialog.Body.Message"/>
++    <style name="TextAppearance.DeviceManagementDialog.Content" parent="@*android:style/TextAppearance.DeviceDefault.Subhead"/>
+ 
+     <style name="BaseBrightnessDialogContainer" parent="@style/Theme.SystemUI">
+         <item name="android:layout_width">match_parent</item>
+@@ -379,30 +379,14 @@
+     </style>
+ 
+     <style name="Theme.SystemUI.QuickSettings" parent="@*android:style/Theme.DeviceDefault">
+-        <item name="isQsTheme">true</item>
+         <item name="lightIconTheme">@style/QSIconTheme</item>
+         <item name="darkIconTheme">@style/QSIconTheme</item>
+         <item name="android:colorError">@*android:color/error_color_material_dark</item>
+         <item name="android:windowIsFloating">true</item>
+         <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back</item>
+-
+-        <item name="surfaceBright">?androidprv:attr/materialColorSurfaceBright</item>
+-        <item name="android:colorBackground">?attr/surfaceBright</item>
+-        <item name="scHigh">?androidprv:attr/materialColorSurfaceContainerHigh</item>
+-        <item name="primary">?androidprv:attr/materialColorPrimary</item>
+-        <item name="tertiary">?androidprv:attr/materialColorTertiary</item>
+-        <item name="onSurface">?androidprv:attr/materialColorOnSurface</item>
+-        <item name="onSurfaceVariant">?androidprv:attr/materialColorOnSurfaceVariant</item>
+-        <item name="outline">?androidprv:attr/materialColorOutline</item>
+-
+-        <item name="shadeActive">@color/material_dynamic_primary90</item>
+-        <item name="onShadeActive">@color/material_dynamic_primary10</item>
+-        <item name="onShadeActiveVariant">@color/material_dynamic_primary30</item>
+-        <item name="shadeInactive">@color/material_dynamic_neutral20</item>
+-        <item name="onShadeInactive">@color/material_dynamic_neutral90</item>
+-        <item name="onShadeInactiveVariant">@color/material_dynamic_neutral_variant80</item>
+-        <item name="shadeDisabled">@color/shade_disabled</item>
+-        <item name="underSurface">@color/material_dynamic_neutral0</item>
++        <item name="offStateColor">@color/material_dynamic_neutral20</item>
++        <item name="underSurfaceColor">@color/material_dynamic_neutral0</item>
++        <item name="android:colorBackground">@color/material_dynamic_neutral10</item>
+         <item name="android:itemTextAppearance">@style/Control.MenuItem</item>
+     </style>
+ 
+@@ -415,15 +399,8 @@
+         <item name="android:windowBackground">@android:color/transparent</item>
+     </style>
+ 
+-    <style name="Theme.SystemUI.QuickSettings.Dialog" parent="@style/Theme.SystemUI.Dialog.QuickSettings">
+-    </style>
+-
+-    <!-- Parent style overrides style in the dot inheritance -->
+-    <style name="Theme.SystemUI.Dialog.QuickSettings" parent="@style/Theme.SystemUI.QuickSettings">
++    <style name="Theme.SystemUI.QuickSettings.Dialog" parent="@android:style/Theme.DeviceDefault.Dialog">
+         <item name="android:dialogCornerRadius">@dimen/notification_corner_radius</item>
+-        <item name="android:buttonBarPositiveButtonStyle">@style/Widget.Dialog.Button.QuickSettings</item>
+-        <item name="android:buttonBarNegativeButtonStyle">@style/Widget.Dialog.Button.QuickSettings</item>
+-        <item name="android:buttonBarNeutralButtonStyle">@style/Widget.Dialog.Button.QuickSettings</item>
+     </style>
+ 
+     <!-- Overridden by values-television/styles.xml with tv-specific settings -->
+@@ -637,11 +614,11 @@
+         <item name="android:letterSpacing">0.01</item>
+         <item name="android:lineHeight">20sp</item>
+         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+-        <item name="android:textColor">?attr/onSurfaceVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+     </style>
+ 
+     <style name="QSCustomizeToolbar" parent="@*android:style/Widget.DeviceDefault.Toolbar">
+-        <item name="android:textColor">?attr/onSurface</item>
++        <item name="android:textColor">?android:attr/textColorPrimary</item>
+         <item name="android:elevation">10dp</item>
+     </style>
+ 
+@@ -1143,11 +1120,6 @@
+         <item name="android:textColor">@color/qs_dialog_btn_filled_large_text</item>
+     </style>
+ 
+-    <style name="Widget.Dialog.Button.QuickSettings">
+-        <item name="android:textColor">?attr/primary</item>
+-        <item name="android:background">?android:attr/selectableItemBackground</item>
+-    </style>
+-
+     <style name="MainSwitch.Settingslib" parent="@android:style/Theme.DeviceDefault">
+         <item name="android:switchMinWidth">@dimen/settingslib_min_switch_width</item>
+     </style>
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/external/TileRequestDialog.kt b/packages/SystemUI/src/com/android/systemui/qs/external/TileRequestDialog.kt
+index 3432628e6d67..6265b3c056e7 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/external/TileRequestDialog.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/external/TileRequestDialog.kt
+@@ -18,7 +18,6 @@ package com.android.systemui.qs.external
+ 
+ import android.content.Context
+ import android.graphics.drawable.Icon
+-import android.view.ContextThemeWrapper
+ import android.view.LayoutInflater
+ import android.view.ViewGroup
+ import android.widget.TextView
+@@ -67,8 +66,7 @@ class TileRequestDialog(
+     }
+ 
+     private fun createTileView(tileData: TileData): QSTileView {
+-        val themedContext = ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings)
+-        val tile = QSTileViewImpl(themedContext, QSIconViewImpl(themedContext), true)
++        val tile = QSTileViewImpl(context, QSIconViewImpl(context), true)
+         val state = QSTile.BooleanState().apply {
+             label = tileData.label
+             handlesLongClick = false
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/binder/FooterActionsViewBinder.kt b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/binder/FooterActionsViewBinder.kt
+index 3c53d77c6beb..9c9ad33e4918 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/binder/FooterActionsViewBinder.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/binder/FooterActionsViewBinder.kt
+@@ -244,8 +244,8 @@ class FooterActionsViewBinder @Inject constructor() {
+ 
+         val backgroundResource =
+             when (model.backgroundColor) {
+-                R.attr.shadeInactive -> R.drawable.qs_footer_action_circle
+-                R.attr.shadeActive -> R.drawable.qs_footer_action_circle_color
++                R.attr.offStateColor -> R.drawable.qs_footer_action_circle
++                com.android.internal.R.attr.colorAccent -> R.drawable.qs_footer_action_circle_color
+                 else -> error("Unsupported icon background resource ${model.backgroundColor}")
+             }
+         buttonView.setBackgroundResource(backgroundResource)
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
+index 32146b5b00e4..b3596a254b7d 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
+@@ -145,12 +145,8 @@ class FooterActionsViewModel(
+                 R.drawable.ic_settings,
+                 ContentDescription.Resource(R.string.accessibility_quick_settings_settings)
+             ),
+-            iconTint =
+-                Utils.getColorAttrDefaultColor(
+-                    context,
+-                    R.attr.onShadeInactiveVariant,
+-                ),
+-            backgroundColor = R.attr.shadeInactive,
++            iconTint = null,
++            backgroundColor = R.attr.offStateColor,
+             this::onSettingsButtonClicked,
+         )
+ 
+@@ -166,9 +162,9 @@ class FooterActionsViewModel(
+                 iconTint =
+                     Utils.getColorAttrDefaultColor(
+                         context,
+-                        R.attr.onShadeActive,
++                        com.android.internal.R.attr.textColorOnAccent,
+                     ),
+-                backgroundColor = R.attr.shadeActive,
++                backgroundColor = com.android.internal.R.attr.colorAccent,
+                 this::onPowerButtonClicked,
+             )
+         } else {
+@@ -268,7 +264,7 @@ class FooterActionsViewModel(
+                     ),
+                 ),
+             iconTint = null,
+-            backgroundColor = R.attr.shadeInactive,
++            backgroundColor = R.attr.offStateColor,
+             onClick = this::onUserSwitcherClicked,
+         )
+     }
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSIconViewImpl.java b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSIconViewImpl.java
+index 7e45491adc83..e54168162de6 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSIconViewImpl.java
++++ b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSIconViewImpl.java
+@@ -248,11 +248,13 @@ public class QSIconViewImpl extends QSIconView {
+      */
+     private static int getIconColorForState(Context context, QSTile.State state) {
+         if (state.disabledByPolicy || state.state == Tile.STATE_UNAVAILABLE) {
+-            return Utils.getColorAttrDefaultColor(context, R.attr.outline);
++            return Utils.getColorAttrDefaultColor(
++                    context, com.android.internal.R.attr.textColorTertiary);
+         } else if (state.state == Tile.STATE_INACTIVE) {
+-            return Utils.getColorAttrDefaultColor(context, R.attr.onShadeInactiveVariant);
++            return Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary);
+         } else if (state.state == Tile.STATE_ACTIVE) {
+-            return Utils.getColorAttrDefaultColor(context, R.attr.onShadeActive);
++            return Utils.getColorAttrDefaultColor(context,
++                    com.android.internal.R.attr.textColorOnAccent);
+         } else {
+             Log.e("QSIconView", "Invalid state " + state);
+             return 0;
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileViewImpl.kt b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileViewImpl.kt
+index 764ef681106b..172084a92323 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileViewImpl.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/tileimpl/QSTileViewImpl.kt
+@@ -29,7 +29,6 @@ import android.os.Trace
+ import android.service.quicksettings.Tile
+ import android.text.TextUtils
+ import android.util.Log
+-import android.util.TypedValue
+ import android.view.Gravity
+ import android.view.LayoutInflater
+ import android.view.View
+@@ -93,21 +92,24 @@ open class QSTileViewImpl @JvmOverloads constructor(
+             updateHeight()
+         }
+ 
+-    private val colorActive = Utils.getColorAttrDefaultColor(context, R.attr.shadeActive)
+-    private val colorInactive = Utils.getColorAttrDefaultColor(context, R.attr.shadeInactive)
+-    private val colorUnavailable = Utils.getColorAttrDefaultColor(context, R.attr.shadeDisabled)
++    private val colorActive = Utils.getColorAttrDefaultColor(context,
++            com.android.internal.R.attr.colorAccentPrimary)
++    private val colorInactive = Utils.getColorAttrDefaultColor(context, R.attr.offStateColor)
++    private val colorUnavailable = Utils.applyAlpha(UNAVAILABLE_ALPHA, colorInactive)
+ 
+-    private val colorLabelActive = Utils.getColorAttrDefaultColor(context, R.attr.onShadeActive)
+-    private val colorLabelInactive = Utils.getColorAttrDefaultColor(context, R.attr.onShadeInactive)
++    private val colorLabelActive =
++            Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.textColorOnAccent)
++    private val colorLabelInactive =
++            Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary)
+     private val colorLabelUnavailable =
+-        Utils.getColorAttrDefaultColor(context, R.attr.outline)
++        Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.textColorTertiary)
+ 
+     private val colorSecondaryLabelActive =
+-        Utils.getColorAttrDefaultColor(context, R.attr.onShadeActiveVariant)
++            Utils.getColorAttrDefaultColor(context, android.R.attr.textColorSecondaryInverse)
+     private val colorSecondaryLabelInactive =
+-            Utils.getColorAttrDefaultColor(context, R.attr.onShadeInactiveVariant)
++            Utils.getColorAttrDefaultColor(context, android.R.attr.textColorSecondary)
+     private val colorSecondaryLabelUnavailable =
+-        Utils.getColorAttrDefaultColor(context, R.attr.outline)
++        Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.textColorTertiary)
+ 
+     private lateinit var label: TextView
+     protected lateinit var secondaryLabel: TextView
+@@ -153,11 +155,6 @@ open class QSTileViewImpl @JvmOverloads constructor(
+     private val locInScreen = IntArray(2)
+ 
+     init {
+-        val typedValue = TypedValue()
+-        if (!getContext().theme.resolveAttribute(R.attr.isQsTheme, typedValue, true)) {
+-            throw IllegalStateException("QSViewImpl must be inflated with a theme that contains " +
+-                    "Theme.SystemUI.QuickSettings")
+-        }
+         setId(generateViewId())
+         orientation = LinearLayout.HORIZONTAL
+         gravity = Gravity.CENTER_VERTICAL or Gravity.START
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/QSPanelTest.kt b/packages/SystemUI/tests/src/com/android/systemui/qs/QSPanelTest.kt
+index fe6c9b3fe7b1..a60dad4a14fe 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/QSPanelTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/QSPanelTest.kt
+@@ -15,11 +15,9 @@ package com.android.systemui.qs
+ 
+ import android.graphics.Rect
+ import android.testing.AndroidTestingRunner
+-import android.testing.TestableContext
+ import android.testing.TestableLooper
+ import android.testing.TestableLooper.RunWithLooper
+ import android.testing.ViewUtils
+-import android.view.ContextThemeWrapper
+ import android.view.View
+ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+ import android.view.accessibility.AccessibilityNodeInfo
+@@ -57,24 +55,19 @@ class QSPanelTest : SysuiTestCase() {
+ 
+     private lateinit var footer: View
+ 
+-    private val themedContext = TestableContext(
+-            ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings)
+-    )
+-
+     @Before
+     @Throws(Exception::class)
+     fun setup() {
+         MockitoAnnotations.initMocks(this)
+         testableLooper = TestableLooper.get(this)
+-        // Apply only the values of the theme that are not defined
+ 
+         testableLooper.runWithLooper {
+-            qsPanel = QSPanel(themedContext, null)
++            qsPanel = QSPanel(context, null)
+             qsPanel.mUsingMediaPlayer = true
+ 
+             qsPanel.initialize(qsLogger)
+             // QSPanel inflates a footer inside of it, mocking it here
+-            footer = LinearLayout(themedContext).apply { id = R.id.qs_footer }
++            footer = LinearLayout(context).apply { id = R.id.qs_footer }
+             qsPanel.addView(footer, MATCH_PARENT, 100)
+             qsPanel.onFinishInflate()
+             // Provides a parent with non-zero size for QSPanel
+@@ -112,12 +105,12 @@ class QSPanelTest : SysuiTestCase() {
+         qsPanel.tileLayout?.addTile(
+                 QSPanelControllerBase.TileRecord(
+                     mock(QSTile::class.java),
+-                    QSTileViewImpl(themedContext, QSIconViewImpl(themedContext))
++                    QSTileViewImpl(context, QSIconViewImpl(context))
+                 )
+             )
+ 
+-        val mediaView = FrameLayout(themedContext)
+-        mediaView.addView(View(themedContext), MATCH_PARENT, 800)
++        val mediaView = FrameLayout(context)
++        mediaView.addView(View(context), MATCH_PARENT, 800)
+ 
+         qsPanel.setUsingHorizontalLayout(/* horizontal */ true, mediaView, /* force */ true)
+         qsPanel.measure(
+@@ -142,12 +135,12 @@ class QSPanelTest : SysuiTestCase() {
+         qsPanel.tileLayout?.addTile(
+             QSPanelControllerBase.TileRecord(
+                 mock(QSTile::class.java),
+-                QSTileViewImpl(themedContext, QSIconViewImpl(themedContext))
++                QSTileViewImpl(context, QSIconViewImpl(context))
+             )
+         )
+ 
+-        val mediaView = FrameLayout(themedContext)
+-        mediaView.addView(View(themedContext), MATCH_PARENT, 800)
++        val mediaView = FrameLayout(context)
++        mediaView.addView(View(context), MATCH_PARENT, 800)
+ 
+         qsPanel.setUsingHorizontalLayout(/* horizontal */ true, mediaView, /* force */ true)
+         qsPanel.measure(
+@@ -168,10 +161,7 @@ class QSPanelTest : SysuiTestCase() {
+     @Test
+     fun testBottomPadding() {
+         val padding = 10
+-        themedContext.orCreateTestableResources.addOverride(
+-                R.dimen.qs_panel_padding_bottom,
+-                padding
+-        )
++        context.orCreateTestableResources.addOverride(R.dimen.qs_panel_padding_bottom, padding)
+         qsPanel.updatePadding()
+         assertThat(qsPanel.paddingBottom).isEqualTo(padding)
+     }
+@@ -180,11 +170,8 @@ class QSPanelTest : SysuiTestCase() {
+     fun testTopPadding() {
+         val padding = 10
+         val paddingCombined = 100
+-        themedContext.orCreateTestableResources.addOverride(R.dimen.qs_panel_padding_top, padding)
+-        themedContext.orCreateTestableResources.addOverride(
+-                R.dimen.qs_panel_padding_top,
+-                paddingCombined
+-        )
++        context.orCreateTestableResources.addOverride(R.dimen.qs_panel_padding_top, padding)
++        context.orCreateTestableResources.addOverride(R.dimen.qs_panel_padding_top, paddingCombined)
+ 
+         qsPanel.updatePadding()
+         assertThat(qsPanel.paddingTop).isEqualTo(paddingCombined)
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/TileLayoutTest.java b/packages/SystemUI/tests/src/com/android/systemui/qs/TileLayoutTest.java
+index f55ef65a8fc1..87892539ccfe 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/TileLayoutTest.java
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/TileLayoutTest.java
+@@ -26,14 +26,12 @@ import static org.mockito.Mockito.mock;
+ import static org.mockito.Mockito.spy;
+ import static org.mockito.Mockito.times;
+ import static org.mockito.Mockito.verify;
+-import static org.mockito.Mockito.when;
+ 
+ import android.content.Context;
+ import android.content.res.Configuration;
+ import android.content.res.Resources;
+ import android.test.suitebuilder.annotation.SmallTest;
+ import android.testing.TestableLooper;
+-import android.view.ContextThemeWrapper;
+ import android.view.View;
+ import android.view.accessibility.AccessibilityNodeInfo;
+ 
+@@ -58,17 +56,14 @@ public class TileLayoutTest extends SysuiTestCase {
+     private Resources mResources;
+     private int mLayoutSizeForOneTile;
+     private TileLayout mTileLayout; // under test
+-    private Context mSpyContext;
+-
+ 
+     @Before
+     public void setUp() throws Exception {
+-        mSpyContext = Mockito.spy(
+-                new ContextThemeWrapper(mContext, R.style.Theme_SystemUI_QuickSettings));
+-        mResources = Mockito.spy(mSpyContext.getResources());
+-        when(mSpyContext.getResources()).thenReturn(mResources);
++        Context context = Mockito.spy(mContext);
++        mResources = Mockito.spy(context.getResources());
++        Mockito.when(mContext.getResources()).thenReturn(mResources);
+ 
+-        mTileLayout = new TileLayout(mSpyContext);
++        mTileLayout = new TileLayout(context);
+         // Layout needs to leave space for the tile margins. Three times the margin size is
+         // sufficient for any number of columns.
+         mLayoutSizeForOneTile =
+@@ -78,7 +73,7 @@ public class TileLayoutTest extends SysuiTestCase {
+     private QSPanelControllerBase.TileRecord createTileRecord() {
+         return new QSPanelControllerBase.TileRecord(
+                 mock(QSTile.class),
+-                spy(new QSTileViewImpl(mSpyContext, new QSIconViewImpl(mSpyContext))));
++                spy(new QSTileViewImpl(mContext, new QSIconViewImpl(mContext))));
+     }
+ 
+     @Test
+@@ -166,7 +161,7 @@ public class TileLayoutTest extends SysuiTestCase {
+                 .layout(left2.capture(), top2.capture(), right2.capture(), bottom2.capture());
+ 
+         // We assume two tiles will always fit side-by-side.
+-        assertTrue(mSpyContext.getResources().getInteger(R.integer.quick_settings_num_columns) > 1);
++        assertTrue(mContext.getResources().getInteger(R.integer.quick_settings_num_columns) > 1);
+ 
+         // left <= right, top <= bottom
+         assertTrue(left1.getValue() <= right1.getValue());
+@@ -223,16 +218,16 @@ public class TileLayoutTest extends SysuiTestCase {
+ 
+     @Test
+     public void resourcesChanged_updateResources_returnsTrue() {
+-        when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(1);
++        Mockito.when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(1);
+         mTileLayout.updateResources(); // setup with 1
+-        when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(2);
++        Mockito.when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(2);
+ 
+         assertEquals(true, mTileLayout.updateResources());
+     }
+ 
+     @Test
+     public void resourcesSame_updateResources_returnsFalse() {
+-        when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(1);
++        Mockito.when(mResources.getInteger(R.integer.quick_settings_num_columns)).thenReturn(1);
+         mTileLayout.updateResources(); // setup with 1
+ 
+         assertEquals(false, mTileLayout.updateResources());
+@@ -255,7 +250,7 @@ public class TileLayoutTest extends SysuiTestCase {
+         QSPanelControllerBase.TileRecord tileRecord = createTileRecord();
+         mTileLayout.addTile(tileRecord);
+ 
+-        FakeTileView tileView = new FakeTileView(mSpyContext);
++        FakeTileView tileView = new FakeTileView(mContext);
+         QSTile.State state = new QSTile.State();
+         state.label = "TEST LABEL";
+         state.secondaryLabel = "TEST SECONDARY LABEL";
+@@ -281,10 +276,9 @@ public class TileLayoutTest extends SysuiTestCase {
+     }
+ 
+     private void changeFontScaling(float scale) {
+-        Configuration configuration =
+-                new Configuration(mSpyContext.getResources().getConfiguration());
++        Configuration configuration = new Configuration(mContext.getResources().getConfiguration());
+         configuration.fontScale = scale;
+         // updateConfiguration could help update on both resource configuration and displayMetrics
+-        mSpyContext.getResources().updateConfiguration(configuration, null, null);
++        mContext.getResources().updateConfiguration(configuration, null, null);
+     }
+ }
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt b/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
+index d647d6add512..2cc6709d0f37 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
+@@ -21,7 +21,6 @@ import android.os.UserManager
+ import android.testing.AndroidTestingRunner
+ import android.testing.TestableLooper
+ import android.testing.TestableLooper.RunWithLooper
+-import android.view.ContextThemeWrapper
+ import androidx.test.filters.SmallTest
+ import com.android.settingslib.Utils
+ import com.android.settingslib.drawable.UserIconDrawable
+@@ -64,8 +63,6 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+     private val testScope = TestScope()
+     private lateinit var utils: FooterActionsTestUtils
+ 
+-    private val themedContext = ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings)
+-
+     @Before
+     fun setUp() {
+         utils = FooterActionsTestUtils(context, TestableLooper.get(this), testScope.testScheduler)
+@@ -87,14 +84,8 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+                     ContentDescription.Resource(R.string.accessibility_quick_settings_settings)
+                 )
+             )
+-        assertThat(settings.backgroundColor).isEqualTo(R.attr.shadeInactive)
+-        assertThat(settings.iconTint)
+-            .isEqualTo(
+-                Utils.getColorAttrDefaultColor(
+-                    themedContext,
+-                    R.attr.onShadeInactiveVariant,
+-                )
+-            )
++        assertThat(settings.backgroundColor).isEqualTo(R.attr.offStateColor)
++        assertThat(settings.iconTint).isNull()
+     }
+ 
+     @Test
+@@ -114,12 +105,12 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+                     ContentDescription.Resource(R.string.accessibility_quick_settings_power_menu)
+                 )
+             )
+-        assertThat(power.backgroundColor).isEqualTo(R.attr.shadeActive)
++        assertThat(power.backgroundColor).isEqualTo(com.android.internal.R.attr.colorAccent)
+         assertThat(power.iconTint)
+             .isEqualTo(
+                 Utils.getColorAttrDefaultColor(
+-                    themedContext,
+-                    R.attr.onShadeActive,
++                    context,
++                    com.android.internal.R.attr.textColorOnAccent,
+                 ),
+             )
+     }
+@@ -179,7 +170,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+         assertThat(userSwitcher).isNotNull()
+         assertThat(userSwitcher!!.icon)
+             .isEqualTo(Icon.Loaded(picture, ContentDescription.Loaded("Signed in as foo")))
+-        assertThat(userSwitcher.backgroundColor).isEqualTo(R.attr.shadeInactive)
++        assertThat(userSwitcher.backgroundColor).isEqualTo(R.attr.offStateColor)
+ 
+         // Change the current user name.
+         userSwitcherControllerWrapper.currentUserName = "bar"
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/tileimpl/QSTileViewImplTest.kt b/packages/SystemUI/tests/src/com/android/systemui/qs/tileimpl/QSTileViewImplTest.kt
+index 3c667725c78a..28aeba461c50 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/tileimpl/QSTileViewImplTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/tileimpl/QSTileViewImplTest.kt
+@@ -22,7 +22,6 @@ import android.service.quicksettings.Tile
+ import android.testing.AndroidTestingRunner
+ import android.testing.TestableLooper
+ import android.text.TextUtils
+-import android.view.ContextThemeWrapper
+ import android.view.View
+ import android.view.accessibility.AccessibilityNodeInfo
+ import android.widget.TextView
+@@ -387,11 +386,7 @@ class QSTileViewImplTest : SysuiTestCase() {
+         context: Context,
+         icon: QSIconView,
+         collapsed: Boolean
+-    ) : QSTileViewImpl(
+-            ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings),
+-            icon,
+-            collapsed
+-    ) {
++    ) : QSTileViewImpl(context, icon, collapsed) {
+         fun changeState(state: QSTile.State) {
+             handleStateChanged(state)
+         }
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/tiles/DndTileTest.kt b/packages/SystemUI/tests/src/com/android/systemui/qs/tiles/DndTileTest.kt
+index 77a443666442..f0e4e3adda7c 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/tiles/DndTileTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/tiles/DndTileTest.kt
+@@ -25,7 +25,6 @@ import android.provider.Settings.Global.ZEN_MODE_NO_INTERRUPTIONS
+ import android.provider.Settings.Global.ZEN_MODE_OFF
+ import android.testing.AndroidTestingRunner
+ import android.testing.TestableLooper
+-import android.view.ContextThemeWrapper
+ import android.view.View
+ import androidx.test.filters.SmallTest
+ import com.android.internal.logging.MetricsLogger
+@@ -111,9 +110,7 @@ class DndTileTest : SysuiTestCase() {
+ 
+         whenever(qsHost.userId).thenReturn(DEFAULT_USER)
+ 
+-        val wrappedContext = object : ContextWrapper(
+-                ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings)
+-        ) {
++        val wrappedContext = object : ContextWrapper(context) {
+             override fun getSharedPreferences(file: File?, mode: Int): SharedPreferences {
+                 return sharedPreferences
+             }
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/shade/carrier/ShadeCarrierTest.java b/packages/SystemUI/tests/src/com/android/systemui/shade/carrier/ShadeCarrierTest.java
+index dae9c975b997..44613103a5b2 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/shade/carrier/ShadeCarrierTest.java
++++ b/packages/SystemUI/tests/src/com/android/systemui/shade/carrier/ShadeCarrierTest.java
+@@ -20,10 +20,8 @@ import static org.junit.Assert.assertEquals;
+ import static org.junit.Assert.assertFalse;
+ import static org.junit.Assert.assertTrue;
+ 
+-import android.content.Context;
+ import android.testing.AndroidTestingRunner;
+ import android.testing.TestableLooper;
+-import android.view.ContextThemeWrapper;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.widget.TextView;
+@@ -50,9 +48,7 @@ public class ShadeCarrierTest extends SysuiTestCase {
+     @Before
+     public void setUp() throws Exception {
+         mTestableLooper = TestableLooper.get(this);
+-        Context themedContext =
+-                new ContextThemeWrapper(mContext, R.style.Theme_SystemUI_QuickSettings);
+-        LayoutInflater inflater = LayoutInflater.from(themedContext);
++        LayoutInflater inflater = LayoutInflater.from(mContext);
+         mContext.ensureTestableResources();
+         mTestableLooper.runWithLooper(() ->
+                 mShadeCarrier = (ShadeCarrier) inflater.inflate(R.layout.shade_carrier, null));
+-- 
+2.43.0
+

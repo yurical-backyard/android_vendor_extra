@@ -1,0 +1,33 @@
+From 14b3a52a1cb41b070ae9b008fb9464b4d5e58c7b Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Fri, 16 Feb 2024 10:18:58 +0900
+Subject: [PATCH] [HACK] DocumentsUI: Unconditionally enable manage mode
+
+---
+ src/com/android/documentsui/files/Config.java | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/com/android/documentsui/files/Config.java b/src/com/android/documentsui/files/Config.java
+index 7537aace4..15eab4d4e 100644
+--- a/src/com/android/documentsui/files/Config.java
++++ b/src/com/android/documentsui/files/Config.java
+@@ -28,6 +28,8 @@ public final class Config extends ActivityConfig {
+ 
+     @Override
+     public boolean managedModeEnabled(DocumentStack stack) {
++        return true;
++/*
+         // This method helps us understand when to kick in special manage mode behaviors.
+         final RootInfo root = stack.getRoot();
+ 
+@@ -42,6 +44,7 @@ public final class Config extends ActivityConfig {
+         return root != null
+                 && root.isDownloads()
+                 && stack.size() == 1;
++*/
+     }
+ 
+     @Override
+-- 
+2.43.0
+

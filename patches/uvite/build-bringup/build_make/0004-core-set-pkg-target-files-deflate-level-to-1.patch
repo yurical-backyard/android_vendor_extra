@@ -1,0 +1,31 @@
+From c9bf95277efea0a0a2d01f9b3a063d99a2db88bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Sim=C3=A3o=20Gomes=20Viana?= <devel@superboring.dev>
+Date: Sat, 14 Oct 2023 16:20:32 +0200
+Subject: [PATCH] core: set pkg target files deflate level to 1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Decreases RAM usage by 10x and increases parallelism
+
+Signed-off-by: Hưng Phan <phandinhhungvp2001@gmail.com>
+---
+ core/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/Makefile b/core/Makefile
+index fe54ed4751..ebe5d1c484 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -6291,7 +6291,7 @@ endif
+ 	@# help early validation of the .zip file while uploading it.
+ 	$(hide) find $(zip_root)/META | sort >$@.list
+ 	$(hide) find $(zip_root) -path $(zip_root)/META -prune -o -print | sort >>$@.list
+-	$(hide) $(SOONG_ZIP) -L 0 -d -o $@ -C $(zip_root) -r $@.list
++	$(hide) $(SOONG_ZIP) -L 1 -d -o $@ -C $(zip_root) -r $@.list
+ 
+ .PHONY: target-files-package
+ target-files-package: $(BUILT_TARGET_FILES_PACKAGE)
+-- 
+2.43.0
+

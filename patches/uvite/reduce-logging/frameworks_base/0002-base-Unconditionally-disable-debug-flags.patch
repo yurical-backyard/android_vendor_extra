@@ -1,0 +1,303 @@
+From d4f1d2e5c10eb13992e2ef1e6728b18176ed22f4 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Mon, 5 Feb 2024 17:45:25 +0900
+Subject: [PATCH] base: Unconditionally disable debug flags
+
+---
+ cmds/incidentd/src/WorkDirectory.cpp                            | 2 +-
+ core/java/android/net/SntpClient.java                           | 2 +-
+ core/java/android/util/TimingsTraceLog.java                     | 2 +-
+ core/java/com/android/internal/os/ZygoteInit.java               | 2 +-
+ core/java/com/android/internal/util/AsyncService.java           | 2 +-
+ .../com/android/internal/location/GpsNetInitiatedHandler.java   | 2 +-
+ media/java/android/media/Ringtone.java                          | 2 +-
+ .../com/android/backupconfirm/BackupRestoreConfirmation.java    | 2 +-
+ .../android/carrierdefaultapp/CaptivePortalLoginActivity.java   | 2 +-
+ .../src/com/android/printspooler/model/MutexFileProvider.java   | 2 +-
+ .../src/com/android/settingslib/bluetooth/BluetoothUtils.java   | 2 +-
+ .../settingslib/bluetooth/CsipSetCoordinatorProfile.java        | 2 +-
+ .../src/com/android/sharedstoragebackup/ObbBackupService.java   | 2 +-
+ .../src/com/android/sharedstoragebackup/SharedStorageAgent.java | 2 +-
+ .../SystemUI/src/com/android/keyguard/KeyguardConstants.java    | 2 +-
+ .../systemui/navigationbar/NavigationModeController.java        | 2 +-
+ .../com/android/systemui/navigationbar/buttons/DeadZone.java    | 2 +-
+ .../src/com/android/systemui/statusbar/GestureRecorder.java     | 2 +-
+ telephony/java/android/telephony/data/DataServiceCallback.java  | 2 +-
+ telephony/java/com/android/ims/ImsConfig.java                   | 2 +-
+ .../hardware/usb/aoapdevicetest/UsbAoapDeviceTestActivity.java  | 2 +-
+ 21 files changed, 21 insertions(+), 21 deletions(-)
+
+diff --git a/cmds/incidentd/src/WorkDirectory.cpp b/cmds/incidentd/src/WorkDirectory.cpp
+index c8d2e0ec4aca..7894148e597d 100644
+--- a/cmds/incidentd/src/WorkDirectory.cpp
++++ b/cmds/incidentd/src/WorkDirectory.cpp
+@@ -569,7 +569,7 @@ sp<ReportFile> WorkDirectory::createReportFile() {
+ status_t WorkDirectory::getReports(vector<sp<ReportFile>>* result, int64_t after) {
+     unique_lock<mutex> lock(mLock);
+ 
+-    const bool DBG = true;
++    const bool DBG = false;
+ 
+     if (DBG) {
+         ALOGD("WorkDirectory::getReports");
+diff --git a/core/java/android/net/SntpClient.java b/core/java/android/net/SntpClient.java
+index 0fb04b9d7299..579729982155 100644
+--- a/core/java/android/net/SntpClient.java
++++ b/core/java/android/net/SntpClient.java
+@@ -56,7 +56,7 @@ import java.util.function.Supplier;
+  */
+ public class SntpClient {
+     private static final String TAG = "SntpClient";
+-    private static final boolean DBG = true;
++    private static final boolean DBG = false;
+ 
+     private static final int REFERENCE_TIME_OFFSET = 16;
+     private static final int ORIGINATE_TIME_OFFSET = 24;
+diff --git a/core/java/android/util/TimingsTraceLog.java b/core/java/android/util/TimingsTraceLog.java
+index 48a5ceae1aef..7555c53e1335 100644
+--- a/core/java/android/util/TimingsTraceLog.java
++++ b/core/java/android/util/TimingsTraceLog.java
+@@ -36,7 +36,7 @@ import java.util.List;
+  */
+ public class TimingsTraceLog {
+     // Debug boot time for every step if it's non-user build.
+-    private static final boolean DEBUG_BOOT_TIME = !Build.IS_USER;
++    private static final boolean DEBUG_BOOT_TIME = false;
+ 
+     // Maximum number of nested calls that are stored
+     private static final int MAX_NESTED_CALLS = 10;
+diff --git a/core/java/com/android/internal/os/ZygoteInit.java b/core/java/com/android/internal/os/ZygoteInit.java
+index f6bf8885915e..691f71c6bd78 100644
+--- a/core/java/com/android/internal/os/ZygoteInit.java
++++ b/core/java/com/android/internal/os/ZygoteInit.java
+@@ -90,7 +90,7 @@ public class ZygoteInit {
+ 
+     private static final String TAG = "Zygote";
+ 
+-    private static final boolean LOGGING_DEBUG = Log.isLoggable(TAG, Log.DEBUG);
++    private static final boolean LOGGING_DEBUG = false;
+ 
+     private static final String PROPERTY_DISABLE_GRAPHICS_DRIVER_PRELOADING =
+             "ro.zygote.disable_gl_preload";
+diff --git a/core/java/com/android/internal/util/AsyncService.java b/core/java/com/android/internal/util/AsyncService.java
+index 58e4a605f88c..44da8bbf9d2d 100644
+--- a/core/java/com/android/internal/util/AsyncService.java
++++ b/core/java/com/android/internal/util/AsyncService.java
+@@ -35,7 +35,7 @@ import android.util.Log;
+ abstract public class AsyncService extends Service {
+     private static final String TAG = "AsyncService";
+ 
+-    protected static final boolean DBG = true;
++    protected static final boolean DBG = false;
+ 
+     /** The command sent when a onStartCommand is invoked */
+     public static final int CMD_ASYNC_SERVICE_ON_START_INTENT = IBinder.LAST_CALL_TRANSACTION;
+diff --git a/location/java/com/android/internal/location/GpsNetInitiatedHandler.java b/location/java/com/android/internal/location/GpsNetInitiatedHandler.java
+index fba4249260ef..f6f17192a4a6 100644
+--- a/location/java/com/android/internal/location/GpsNetInitiatedHandler.java
++++ b/location/java/com/android/internal/location/GpsNetInitiatedHandler.java
+@@ -51,7 +51,7 @@ public class GpsNetInitiatedHandler {
+ 
+     private static final String TAG = "GpsNetInitiatedHandler";
+ 
+-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
++    private static final boolean DEBUG = false;
+ 
+     // string constants for defining data fields in NI Intent
+     public static final String NI_INTENT_KEY_NOTIF_ID = "notif_id";
+diff --git a/media/java/android/media/Ringtone.java b/media/java/android/media/Ringtone.java
+index e78dc31646ca..b07b670b2977 100644
+--- a/media/java/android/media/Ringtone.java
++++ b/media/java/android/media/Ringtone.java
+@@ -49,7 +49,7 @@ import java.util.ArrayList;
+  */
+ public class Ringtone {
+     private static final String TAG = "Ringtone";
+-    private static final boolean LOGD = true;
++    private static final boolean LOGD = false;
+ 
+     private static final String[] MEDIA_COLUMNS = new String[] {
+         MediaStore.Audio.Media._ID,
+diff --git a/packages/BackupRestoreConfirmation/src/com/android/backupconfirm/BackupRestoreConfirmation.java b/packages/BackupRestoreConfirmation/src/com/android/backupconfirm/BackupRestoreConfirmation.java
+index 3c790f0e24ee..788f2c2d9a1a 100644
+--- a/packages/BackupRestoreConfirmation/src/com/android/backupconfirm/BackupRestoreConfirmation.java
++++ b/packages/BackupRestoreConfirmation/src/com/android/backupconfirm/BackupRestoreConfirmation.java
+@@ -48,7 +48,7 @@ import android.widget.Toast;
+  */
+ public class BackupRestoreConfirmation extends Activity {
+     static final String TAG = "BackupRestoreConfirmation";
+-    static final boolean DEBUG = true;
++    static final boolean DEBUG = false;
+ 
+     static final String KEY_DID_ACKNOWLEDGE = "did_acknowledge";
+     static final String KEY_TOKEN = "token";
+diff --git a/packages/CarrierDefaultApp/src/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java b/packages/CarrierDefaultApp/src/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java
+index 10d68ba8d583..5c20ec4602bf 100644
+--- a/packages/CarrierDefaultApp/src/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java
++++ b/packages/CarrierDefaultApp/src/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java
+@@ -68,7 +68,7 @@ import java.util.Random;
+  */
+ public class CaptivePortalLoginActivity extends Activity {
+     private static final String TAG = CaptivePortalLoginActivity.class.getSimpleName();
+-    private static final boolean DBG = true;
++    private static final boolean DBG = false;
+ 
+     private static final int SOCKET_TIMEOUT_MS = 10 * 1000;
+     private static final int NETWORK_REQUEST_TIMEOUT_MS = 5 * 1000;
+diff --git a/packages/PrintSpooler/src/com/android/printspooler/model/MutexFileProvider.java b/packages/PrintSpooler/src/com/android/printspooler/model/MutexFileProvider.java
+index 0df5e3cf18d7..60c9b586cb1a 100644
+--- a/packages/PrintSpooler/src/com/android/printspooler/model/MutexFileProvider.java
++++ b/packages/PrintSpooler/src/com/android/printspooler/model/MutexFileProvider.java
+@@ -35,7 +35,7 @@ import java.io.IOException;
+ public final class MutexFileProvider {
+     private static final String LOG_TAG = "MutexFileProvider";
+ 
+-    private static final boolean DEBUG = true;
++    private static final boolean DEBUG = false;
+ 
+     private final Object mLock = new Object();
+ 
+diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothUtils.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothUtils.java
+index 71564eacd6ac..f47aefe6c864 100644
+--- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothUtils.java
++++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/BluetoothUtils.java
+@@ -39,7 +39,7 @@ public class BluetoothUtils {
+     private static final String TAG = "BluetoothUtils";
+ 
+     public static final boolean V = false; // verbose logging
+-    public static final boolean D = true;  // regular logging
++    public static final boolean D = false;  // regular logging
+ 
+     public static final int META_INT_ERROR = -1;
+     public static final String BT_ADVANCED_HEADER_ENABLED = "bt_advanced_header_enabled";
+diff --git a/packages/SettingsLib/src/com/android/settingslib/bluetooth/CsipSetCoordinatorProfile.java b/packages/SettingsLib/src/com/android/settingslib/bluetooth/CsipSetCoordinatorProfile.java
+index c3f845ca8c0a..b853fe896820 100644
+--- a/packages/SettingsLib/src/com/android/settingslib/bluetooth/CsipSetCoordinatorProfile.java
++++ b/packages/SettingsLib/src/com/android/settingslib/bluetooth/CsipSetCoordinatorProfile.java
+@@ -42,7 +42,7 @@ import java.util.Map;
+  */
+ public class CsipSetCoordinatorProfile implements LocalBluetoothProfile {
+     private static final String TAG = "CsipSetCoordinatorProfile";
+-    private static final boolean VDBG = true;
++    private static final boolean VDBG = false;
+ 
+     private Context mContext;
+ 
+diff --git a/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/ObbBackupService.java b/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/ObbBackupService.java
+index 0f8ccd7bc403..ce8c377153a6 100644
+--- a/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/ObbBackupService.java
++++ b/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/ObbBackupService.java
+@@ -43,7 +43,7 @@ import com.android.internal.backup.IObbBackupService;
+  */
+ public class ObbBackupService extends Service {
+     static final String TAG = "ObbBackupService";
+-    static final boolean DEBUG = true;
++    static final boolean DEBUG = false;
+ 
+     /**
+      * IObbBackupService interface implementation
+diff --git a/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/SharedStorageAgent.java b/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/SharedStorageAgent.java
+index e453cf53a98b..1b9c0cff7ce8 100644
+--- a/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/SharedStorageAgent.java
++++ b/packages/SharedStorageBackup/src/com/android/sharedstoragebackup/SharedStorageAgent.java
+@@ -16,7 +16,7 @@ import java.io.IOException;
+ 
+ public class SharedStorageAgent extends FullBackupAgent {
+     static final String TAG = "SharedStorageAgent";
+-    static final boolean DEBUG = true;
++    static final boolean DEBUG = false;
+ 
+     StorageVolume[] mVolumes;
+ 
+diff --git a/packages/SystemUI/src/com/android/keyguard/KeyguardConstants.java b/packages/SystemUI/src/com/android/keyguard/KeyguardConstants.java
+index a5b62b6e7c64..2993253035cd 100755
+--- a/packages/SystemUI/src/com/android/keyguard/KeyguardConstants.java
++++ b/packages/SystemUI/src/com/android/keyguard/KeyguardConstants.java
+@@ -28,5 +28,5 @@ public class KeyguardConstants {
+      * be used temporarily for debugging.
+      */
+     public static final boolean DEBUG = Log.isLoggable("Keyguard", Log.DEBUG);
+-    public static final boolean DEBUG_SIM_STATES = true;
++    public static final boolean DEBUG_SIM_STATES = false;
+ }
+diff --git a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationModeController.java b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationModeController.java
+index 99daf368c846..4631ac70b046 100644
+--- a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationModeController.java
++++ b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationModeController.java
+@@ -57,7 +57,7 @@ import javax.inject.Inject;
+ public class NavigationModeController implements Dumpable {
+ 
+     private static final String TAG = NavigationModeController.class.getSimpleName();
+-    private static final boolean DEBUG = true;
++    private static final boolean DEBUG = false;
+ 
+     public interface ModeChangedListener {
+         void onNavigationModeChanged(int mode);
+diff --git a/packages/SystemUI/src/com/android/systemui/navigationbar/buttons/DeadZone.java b/packages/SystemUI/src/com/android/systemui/navigationbar/buttons/DeadZone.java
+index 9305d0518732..488b7eaf126f 100644
+--- a/packages/SystemUI/src/com/android/systemui/navigationbar/buttons/DeadZone.java
++++ b/packages/SystemUI/src/com/android/systemui/navigationbar/buttons/DeadZone.java
+@@ -46,7 +46,7 @@ public class DeadZone {
+     public static final int HORIZONTAL = 0;  // Consume taps along the top edge.
+     public static final int VERTICAL = 1;  // Consume taps along the left edge.
+ 
+-    private static final boolean CHATTY = true; // print to logcat when we eat a click
++    private static final boolean CHATTY = false; // print to logcat when we eat a click
+ 
+     private static final FloatProperty<DeadZone> FLASH_PROPERTY =
+             new FloatProperty<DeadZone>("DeadZoneFlash") {
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/GestureRecorder.java b/packages/SystemUI/src/com/android/systemui/statusbar/GestureRecorder.java
+index a49af47f4803..4adb8868c0b7 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/GestureRecorder.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/GestureRecorder.java
+@@ -33,7 +33,7 @@ import java.util.LinkedList;
+  * Convenience class for capturing gestures for later analysis.
+  */
+ public class GestureRecorder {
+-    public static final boolean DEBUG = true; // for now
++    public static final boolean DEBUG = false; // for now
+     public static final String TAG = GestureRecorder.class.getSimpleName();
+ 
+     public class Gesture {
+diff --git a/telephony/java/android/telephony/data/DataServiceCallback.java b/telephony/java/android/telephony/data/DataServiceCallback.java
+index 8287a038c841..7910e59b16eb 100644
+--- a/telephony/java/android/telephony/data/DataServiceCallback.java
++++ b/telephony/java/android/telephony/data/DataServiceCallback.java
+@@ -42,7 +42,7 @@ public class DataServiceCallback {
+ 
+     private static final String TAG = DataServiceCallback.class.getSimpleName();
+ 
+-    private static final boolean DBG = true;
++    private static final boolean DBG = false;
+ 
+     /**
+      * Result of data requests
+diff --git a/telephony/java/com/android/ims/ImsConfig.java b/telephony/java/com/android/ims/ImsConfig.java
+index 314ea6a6f44c..4b876c5d73c7 100644
+--- a/telephony/java/com/android/ims/ImsConfig.java
++++ b/telephony/java/com/android/ims/ImsConfig.java
+@@ -41,7 +41,7 @@ import java.util.concurrent.Executor;
+ @Deprecated
+ public class ImsConfig {
+     private static final String TAG = "ImsConfig";
+-    private boolean DBG = true;
++    private boolean DBG = false;
+     private final IImsConfig miConfig;
+ 
+     /**
+diff --git a/tests/UsbHostExternalManagmentTest/AoapTestDevice/src/com/android/hardware/usb/aoapdevicetest/UsbAoapDeviceTestActivity.java b/tests/UsbHostExternalManagmentTest/AoapTestDevice/src/com/android/hardware/usb/aoapdevicetest/UsbAoapDeviceTestActivity.java
+index ef179e2da26d..4c538e3c5dbf 100644
+--- a/tests/UsbHostExternalManagmentTest/AoapTestDevice/src/com/android/hardware/usb/aoapdevicetest/UsbAoapDeviceTestActivity.java
++++ b/tests/UsbHostExternalManagmentTest/AoapTestDevice/src/com/android/hardware/usb/aoapdevicetest/UsbAoapDeviceTestActivity.java
+@@ -35,7 +35,7 @@ import libcore.io.IoUtils;
+ 
+ public class UsbAoapDeviceTestActivity extends Activity {
+     private static final String TAG = UsbAoapDeviceTestActivity.class.getSimpleName();
+-    private static final boolean DBG = true;
++    private static final boolean DBG = false;
+ 
+     private static final String ACTION_USB_ACCESSORY_PERMISSION =
+             "com.android.hardware.usb.aoapdevicetest.ACTION_USB_ACCESSORY_PERMISSION";
+-- 
+2.43.0
+

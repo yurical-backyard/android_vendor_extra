@@ -1,0 +1,104 @@
+From d043cb79deee62efc55a0f42b2cbf22e6941991a Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Fri, 31 Dec 2021 23:44:59 +0530
+Subject: [PATCH] InputMethodUtils: Fix system bootloop when no IME found
+
+* In case of faulty gapps, there are no default IME left on the system.
+  This shouldn't be situation where user cannot boot at all.
+* Handle InputMethodUtils to prevent PackageManagerService crashing system.
+
+Log:
+
+12-31 23:07:42.668  2559  2559 E System  : ******************************************
+12-31 23:07:42.668  2559  2559 E System  : ************ Failure starting system services
+12-31 23:07:42.668  2559  2559 E System  : java.lang.RuntimeException: Failed to boot service com.android.server.inputmethod.InputMethodManagerService$Lifecycle: onBootPhase threw an exception during phase 550
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:211)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServer.lambda$startOtherServices$6$SystemServer(SystemServer.java:2294)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServer$$ExternalSyntheticLambda4.run(Unknown Source:30)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.am.ActivityManagerService.systemReady(ActivityManagerService.java:9653)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServer.startOtherServices(SystemServer.java:2291)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServer.run(SystemServer.java:608)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServer.main(SystemServer.java:424)
+12-31 23:07:42.668  2559  2559 E System  : 	at java.lang.reflect.Method.invoke(Native Method)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:925)
+12-31 23:07:42.668  2559  2559 E System  : Caused by: java.lang.IllegalArgumentException: Unknown package: com.google.android.inputmethod.latin
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.pm.PackageManagerService.getApplicationEnabledSetting(PackageManagerService.java:21539)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.inputmethod.InputMethodUtils.setDisabledUntilUsed(InputMethodUtils.java:681)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.inputmethod.InputMethodUtils.setNonSelectedSystemImesDisabledUntilUsed(InputMethodUtils.java:673)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.inputmethod.InputMethodManagerService.systemRunning(InputMethodManagerService.java:1913)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.inputmethod.InputMethodManagerService$Lifecycle.onBootPhase(InputMethodManagerService.java:1636)
+12-31 23:07:42.668  2559  2559 E System  : 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:208)
+12-31 23:07:42.668  2559  2559 E System  : 	... 9 more
+12-31 23:07:42.668  2559  2559 E Zygote  : System zygote died with exception
+12-31 23:07:42.668  2559  2559 E Zygote  : java.lang.RuntimeException: Failed to boot service com.android.server.inputmethod.InputMethodManagerService$Lifecycle: onBootPhase threw an exception during phase 550
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:211)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServer.lambda$startOtherServices$6$SystemServer(SystemServer.java:2294)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServer$$ExternalSyntheticLambda4.run(Unknown Source:30)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.am.ActivityManagerService.systemReady(ActivityManagerService.java:9653)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServer.startOtherServices(SystemServer.java:2291)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServer.run(SystemServer.java:608)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServer.main(SystemServer.java:424)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at java.lang.reflect.Method.invoke(Native Method)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:925)
+12-31 23:07:42.668  2559  2559 E Zygote  : Caused by: java.lang.IllegalArgumentException: Unknown package: com.google.android.inputmethod.latin
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.pm.PackageManagerService.getApplicationEnabledSetting(PackageManagerService.java:21539)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.inputmethod.InputMethodUtils.setDisabledUntilUsed(InputMethodUtils.java:681)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.inputmethod.InputMethodUtils.setNonSelectedSystemImesDisabledUntilUsed(InputMethodUtils.java:673)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.inputmethod.InputMethodManagerService.systemRunning(InputMethodManagerService.java:1913)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.inputmethod.InputMethodManagerService$Lifecycle.onBootPhase(InputMethodManagerService.java:1636)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:208)
+12-31 23:07:42.668  2559  2559 E Zygote  : 	... 9 more
+12-31 23:07:42.668  2559  2559 D AndroidRuntime: Shutting down VM
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: *** FATAL EXCEPTION IN SYSTEM PROCESS: main
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: java.lang.RuntimeException: Failed to boot service com.android.server.inputmethod.InputMethodManagerService$Lifecycle: onBootPhase threw an exception during phase 550
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:211)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServer.lambda$startOtherServices$6$SystemServer(SystemServer.java:2294)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServer$$ExternalSyntheticLambda4.run(Unknown Source:30)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.am.ActivityManagerService.systemReady(ActivityManagerService.java:9653)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServer.startOtherServices(SystemServer.java:2291)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServer.run(SystemServer.java:608)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServer.main(SystemServer.java:424)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:592)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:925)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: Caused by: java.lang.IllegalArgumentException: Unknown package: com.google.android.inputmethod.latin
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.pm.PackageManagerService.getApplicationEnabledSetting(PackageManagerService.java:21539)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.inputmethod.InputMethodUtils.setDisabledUntilUsed(InputMethodUtils.java:681)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.inputmethod.InputMethodUtils.setNonSelectedSystemImesDisabledUntilUsed(InputMethodUtils.java:673)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.inputmethod.InputMethodManagerService.systemRunning(InputMethodManagerService.java:1913)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.inputmethod.InputMethodManagerService$Lifecycle.onBootPhase(InputMethodManagerService.java:1636)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	at com.android.server.SystemServiceManager.startBootPhase(SystemServiceManager.java:208)
+12-31 23:07:42.669  2559  2559 E AndroidRuntime: 	... 9 more
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../java/com/android/server/inputmethod/InputMethodUtils.java | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/inputmethod/InputMethodUtils.java b/services/core/java/com/android/server/inputmethod/InputMethodUtils.java
+index c97d8e21eef1..3f1ba946ab22 100644
+--- a/services/core/java/com/android/server/inputmethod/InputMethodUtils.java
++++ b/services/core/java/com/android/server/inputmethod/InputMethodUtils.java
+@@ -153,7 +153,7 @@ final class InputMethodUtils {
+         final int state;
+         try {
+             state = packageManagerForUser.getApplicationEnabledSetting(packageName);
+-        } catch (IllegalArgumentException e) {
++        } catch (Exception e) {
+             Slog.w(TAG, "getApplicationEnabledSetting failed. packageName=" + packageName
+                     + " userId=" + packageManagerForUser.getUserId(), e);
+             return;
+@@ -167,7 +167,7 @@ final class InputMethodUtils {
+                 packageManagerForUser.setApplicationEnabledSetting(packageName,
+                         PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED,
+                         0 /* newState */);
+-            } catch (IllegalArgumentException e) {
++            } catch (Exception e) {
+                 Slog.w(TAG, "setApplicationEnabledSetting failed. packageName=" + packageName
+                         + " userId=" + packageManagerForUser.getUserId(), e);
+                 return;
+-- 
+2.43.0
+

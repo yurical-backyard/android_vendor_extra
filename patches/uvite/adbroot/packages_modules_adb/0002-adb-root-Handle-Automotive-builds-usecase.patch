@@ -1,0 +1,138 @@
+From 88411b79d13147583fcd96d2e8c94e6cc6839ee0 Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Fri, 19 Jan 2024 22:04:38 +0000
+Subject: [PATCH] adb_root: Handle Automotive builds usecase
+
+Android Automotive relies on multi-user support to provide a shared
+drive experience. The headless system user runs in the background and
+hosts all system services. The "Driver" user created by default upon
+first boot has admin priviledges and Id 10, therefore CarSettings runs
+as u10_system. Handle that multi-user usecase, but ensure that the
+running build is Automotive. In this case user Id is ignored, because
+other users can have admin role as well (note that non-admin users
+are restricted and can't even enable/access Developer options).
+
+This fixes the crash that was ocurring when opening Developer options:
+
+  01-19 17:15:55.978  4823  4823 E AndroidRuntime: FATAL EXCEPTION: main
+  01-19 17:15:55.978  4823  4823 E AndroidRuntime: Process: com.android.car.developeroptions, PID: 4823
+  01-19 17:15:55.978  4823  4823 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.android.car.developeroptions/com.android.car.developeroptions.CarDevelopmentSettingsDashboardActivity}: java.lang.SecurityException: Caller must be system or shell
+
+Change-Id: I575d7836724fd302c980db6733826452478d80b0
+---
+ Android.bp               |  3 +++
+ root/adbroot_service.cpp | 45 +++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 45 insertions(+), 3 deletions(-)
+
+diff --git a/Android.bp b/Android.bp
+index f97477fa..e4ab3cce 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -815,9 +815,12 @@ cc_binary {
+     ],
+     shared_libs: [
+         "libbase",
++        "libbinder",
+         "libbinder_ndk",
++        "libcutils",
+         "liblog",
+         "libutils",
++        "packagemanager_aidl-cpp",
+     ],
+     static_libs: [
+         "adbroot_aidl_interface-ndk",
+diff --git a/root/adbroot_service.cpp b/root/adbroot_service.cpp
+index 710a521e..ff30f4b9 100644
+--- a/root/adbroot_service.cpp
++++ b/root/adbroot_service.cpp
+@@ -15,10 +15,14 @@
+  */
+ 
+ #include <android/binder_manager.h>
++#include <android/content/pm/IPackageManagerNative.h>
+ #include <android-base/file.h>
+ #include <android-base/logging.h>
+ #include <android-base/properties.h>
+ #include <android-base/strings.h>
++#include <binder/IBinder.h>
++#include <binder/IServiceManager.h>
++#include <cutils/multiuser.h>
+ #include <private/android_filesystem_config.h>
+ 
+ #include "adbroot_service.h"
+@@ -33,6 +37,35 @@ static ndk::ScopedAStatus SecurityException(const std::string& msg) {
+ }
+ }  // anonymous namespace
+ 
++namespace android {
++static bool isAutomotive() {
++    sp<IServiceManager> serviceManager = defaultServiceManager();
++    if (serviceManager.get() == nullptr) {
++        LOG(ERROR) << "Unable to access native ServiceManager";
++        return false;
++    }
++
++    sp<content::pm::IPackageManagerNative> packageManager;
++    sp<IBinder> binder = serviceManager->waitForService(String16("package_native"));
++    packageManager = interface_cast<content::pm::IPackageManagerNative>(binder);
++    if (packageManager == nullptr) {
++        LOG(ERROR) << "Unable to access native PackageManager";
++        return false;
++    }
++
++    bool isAutomotive = false;
++    binder::Status status =
++        packageManager->hasSystemFeature(String16("android.hardware.type.automotive"), 0,
++                                         &isAutomotive);
++    if (!status.isOk()) {
++        LOG(ERROR) << "Calling hasSystemFeature failed: " << status.exceptionMessage().c_str();
++        return false;
++    }
++
++    return isAutomotive;
++}
++}  // namespace android
++
+ namespace aidl {
+ namespace android {
+ namespace adbroot {
+@@ -43,6 +76,12 @@ using ::android::base::SetProperty;
+ using ::android::base::Trim;
+ using ::android::base::WriteStringToFile;
+ 
++static inline bool isAutomotive(uid_t uid) {
++    appid_t appid = multiuser_get_app_id(uid);
++
++    return appid == AID_SYSTEM && ::android::isAutomotive();
++}
++
+ ADBRootService::ADBRootService() : enabled_(false) {
+     std::string buf;
+     if (ReadFileToString(kStoragePath + kEnabled, &buf)) {
+@@ -62,7 +101,7 @@ void ADBRootService::Register() {
+ 
+ ndk::ScopedAStatus ADBRootService::isSupported(bool* _aidl_return) {
+     uid_t uid = AIBinder_getCallingUid();
+-    if (uid != AID_SYSTEM && uid != AID_SHELL) {
++    if (uid != AID_SYSTEM && uid != AID_SHELL && !isAutomotive(uid)) {
+         return SecurityException("Caller must be system or shell");
+     }
+ 
+@@ -73,7 +112,7 @@ ndk::ScopedAStatus ADBRootService::isSupported(bool* _aidl_return) {
+ 
+ ndk::ScopedAStatus ADBRootService::setEnabled(bool enabled) {
+     uid_t uid = AIBinder_getCallingUid();
+-    if (uid != AID_SYSTEM) {
++    if (uid != AID_SYSTEM && !isAutomotive(uid)) {
+         return SecurityException("Caller must be system");
+     }
+ 
+@@ -95,7 +134,7 @@ ndk::ScopedAStatus ADBRootService::setEnabled(bool enabled) {
+ 
+ ndk::ScopedAStatus ADBRootService::getEnabled(bool* _aidl_return) {
+     uid_t uid = AIBinder_getCallingUid();
+-    if (uid != AID_SYSTEM && uid != AID_SHELL) {
++    if (uid != AID_SYSTEM && uid != AID_SHELL && !isAutomotive(uid)) {
+         return SecurityException("Caller must be system or shell");
+     }
+ 

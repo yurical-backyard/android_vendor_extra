@@ -1,0 +1,61 @@
+From 147eddf916248ff4cdbc1ea3a6194f91ab31987d Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sat, 11 Nov 2023 14:47:12 +0800
+Subject: [PATCH] InputMethodManager: Prevent unnecessary invocation of
+ IME
+
+* attempt to fix random short appearance of IME when creating/switching views
+
+fixes:
+
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: FATAL EXCEPTION: main
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: Process: com.android.launcher3, PID: 2437
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke virtual method 'android.view.ViewRootImpl android.view.View.getViewRootImpl()' on a null object reference
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.view.inputmethod.InputMethodManager.startInputInner(InputMethodManager.java:2274)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.view.inputmethod.InputMethodManager$H.handleMessage(InputMethodManager.java:963)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:201)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:288)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7921)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+02-25 07:22:30.059  2437  2437 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:855)
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../java/android/view/inputmethod/InputMethodManager.java | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/core/java/android/view/inputmethod/InputMethodManager.java b/core/java/android/view/inputmethod/InputMethodManager.java
+index add2fd67bc89..0a42e436e021 100644
+--- a/core/java/android/view/inputmethod/InputMethodManager.java
++++ b/core/java/android/view/inputmethod/InputMethodManager.java
+@@ -2680,6 +2680,7 @@ public final class InputMethodManager {
+             @Nullable IBinder windowGainingFocus, @StartInputFlags int startInputFlags,
+             @SoftInputModeFlags int softInputMode, int windowFlags) {
+         final View view;
++        final ViewRootImpl viewRoot;
+         synchronized (mH) {
+             view = getServedViewLocked();
+ 
+@@ -2718,13 +2719,14 @@ public final class InputMethodManager {
+ 
+         if (windowGainingFocus == null) {
+             windowGainingFocus = view.getWindowToken();
+-            if (windowGainingFocus == null) {
++            viewRoot = view.getViewRootImpl();
++            if (windowGainingFocus == null && viewRoot == null) {
+                 Log.e(TAG, "ABORT input: ServedView must be attached to a Window");
+                 return false;
+             }
+             startInputFlags = getStartInputFlags(view, startInputFlags);
+-            softInputMode = view.getViewRootImpl().mWindowAttributes.softInputMode;
+-            windowFlags = view.getViewRootImpl().mWindowAttributes.flags;
++            softInputMode = viewRoot.mWindowAttributes.softInputMode;
++            windowFlags = viewRoot.mWindowAttributes.flags;
+         }
+ 
+         // Okay we are now ready to call into the served view and have it
+-- 
+2.43.0
+

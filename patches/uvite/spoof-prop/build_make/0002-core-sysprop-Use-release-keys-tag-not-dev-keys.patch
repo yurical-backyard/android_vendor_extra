@@ -1,0 +1,28 @@
+From e2e6cad5a1e34294f7c1686d284cb2ce1efa4bba Mon Sep 17 00:00:00 2001
+From: beanstown106 <nbenis106@gmail.com>
+Date: Tue, 2 Aug 2022 15:13:10 +0800
+Subject: [PATCH] core: sysprop: Use release-keys tag not dev-keys
+
+- Fix issues with some app requiring release-keys
+
+Change-Id: Ia1352c5408670ed37b7ea529813fbb3df425003f
+---
+ core/sysprop.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/sysprop.mk b/core/sysprop.mk
+index bd6f3d9fdf..65b436de18 100644
+--- a/core/sysprop.mk
++++ b/core/sysprop.mk
+@@ -163,7 +163,7 @@ endif
+ ifeq ($(DEFAULT_SYSTEM_DEV_CERTIFICATE),build/make/target/product/security/testkey)
+ BUILD_KEYS := release-keys
+ else
+-BUILD_KEYS := dev-keys
++BUILD_KEYS := release-keys
+ endif
+ BUILD_VERSION_TAGS += $(BUILD_KEYS)
+ BUILD_VERSION_TAGS := $(subst $(space),$(comma),$(sort $(BUILD_VERSION_TAGS)))
+-- 
+2.34.1
+

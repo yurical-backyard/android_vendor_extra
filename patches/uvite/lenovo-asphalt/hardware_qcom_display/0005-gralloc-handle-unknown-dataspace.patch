@@ -1,0 +1,39 @@
+From f8f0ce45bf0b729a2b30a8985ef0a4aed3f9af9e Mon Sep 17 00:00:00 2001
+From: Saurabh Yadav <quic_sauyad@quicinc.com>
+Date: Wed, 23 Aug 2023 12:10:41 +0530
+Subject: [PATCH] gralloc: handle unknown dataspace
+
+In some scenarios, unknown standard dataspace is set for
+some ui layer(s).
+This leads to issue of reading unknown csc from gralloc
+metadata and using it to overwrite a hwc layer's default csc.
+In such cases, the layer ends up with invalid/unknown csc.
+
+This change helps to avoid such scenarios and preserve the default
+csc of layer by not setting standard dataspace flag to true when
+dataspace passed is unknown.
+
+Change-Id: I62b9fd993df9602b48815e858fd49736f089a317
+---
+ gralloc/gr_buf_mgr.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/gralloc/gr_buf_mgr.cpp b/gralloc/gr_buf_mgr.cpp
+index c2ca97dce..f4d30be0b 100644
+--- a/gralloc/gr_buf_mgr.cpp
++++ b/gralloc/gr_buf_mgr.cpp
+@@ -1407,7 +1407,10 @@ Error BufferManager::SetMetadata(private_handle_t *handle, int64_t metadatatype_
+       if (android::gralloc4::decodeDataspace(in, &dataspace)) {
+         return Error::UNSUPPORTED;
+       }
+-      dataspaceToColorMetadata(dataspace, &metadata->color);
++      // Avoid setting standard dataspace flag for unknown/invalid dataspace
++      if (dataspaceToColorMetadata(dataspace, &metadata->color) != Error::NONE) {
++        return Error::NONE;
++      }
+       break;
+     case (int64_t)StandardMetadataType::BLEND_MODE:
+       BlendMode mode;
+-- 
+2.43.0
+

@@ -1,0 +1,64 @@
+From e160857af70c52e61d2e4ee731e3369a8779e062 Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Wed, 27 Mar 2024 15:54:45 +0000
+Subject: [PATCH] Settings: Move adb root toggle and make it independent
+
+Place it below USB and Wireless debugging toggles, but at the same
+time make the preference not dependent from USB debugging as one
+might want to enable rooted debugging over wireless.
+
+Change-Id: I4b66484cc50ba0fb6a99fed0f42b85603e3c3cf0
+---
+ res/xml/development_settings.xml                    | 13 ++++++-------
+ .../DevelopmentSettingsDashboardFragment.java       |  2 +-
+ 2 files changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/res/xml/development_settings.xml b/res/xml/development_settings.xml
+index b489ac9cdb4..f0c72476dc7 100644
+--- a/res/xml/development_settings.xml
++++ b/res/xml/development_settings.xml
+@@ -158,13 +158,6 @@
+             android:title="@string/enable_adb"
+             android:summary="@string/enable_adb_summary" />
+ 
+-        <SwitchPreference
+-            android:key="enable_adb_root"
+-            android:title="@string/adb_enable_root"
+-            android:summary="@string/adb_enable_summary_root"
+-            android:dependency="enable_adb"
+-            android:persistent="false" />
+-
+         <Preference android:key="clear_adb_keys"
+                     android:title="@string/clear_adb_keys" />
+ 
+@@ -175,6 +168,12 @@
+             android:summary="@string/enable_adb_wireless_summary"
+             settings:keywords="@string/keywords_adb_wireless" />
+ 
++        <SwitchPreference
++            android:key="enable_adb_root"
++            android:title="@string/adb_enable_root"
++            android:summary="@string/adb_enable_summary_root"
++            android:persistent="false" />
++
+         <SwitchPreference
+             android:key="adb_authorization_timeout"
+             android:title="@string/adb_authorization_timeout_title"
+diff --git a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+index 03b3672301b..6d8ec3df566 100644
+--- a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
++++ b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+@@ -635,9 +635,9 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
+         controllers.add(new DisableAutomaticUpdatesPreferenceController(context));
+         controllers.add(new SelectDSUPreferenceController(context));
+         controllers.add(new AdbPreferenceController(context, fragment));
+-        controllers.add(new AdbRootPreferenceController(context, fragment));
+         controllers.add(new ClearAdbKeysPreferenceController(context, fragment));
+         controllers.add(new WirelessDebuggingPreferenceController(context, lifecycle));
++        controllers.add(new AdbRootPreferenceController(context, fragment));
+         controllers.add(new AdbAuthorizationTimeoutPreferenceController(context));
+         controllers.add(new LocalTerminalPreferenceController(context));
+         controllers.add(new BugReportInPowerPreferenceController(context));
+-- 
+2.43.0
+

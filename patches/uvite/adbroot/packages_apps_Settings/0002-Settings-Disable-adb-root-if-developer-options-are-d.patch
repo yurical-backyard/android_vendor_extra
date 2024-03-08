@@ -1,0 +1,40 @@
+From 794b4153047017efea8ed7601248fdb883116228 Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Wed, 27 Mar 2024 15:51:12 +0000
+Subject: [PATCH] Settings: Disable adb root if developer options are
+ disabled
+
+Change-Id: I7944ead69611d232ac65029c664db1f1911a9004
+---
+ .../development/AdbRootPreferenceController.java       | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/development/AdbRootPreferenceController.java b/src/com/android/settings/development/AdbRootPreferenceController.java
+index 54f249ef9f6..958c67e380e 100644
+--- a/src/com/android/settings/development/AdbRootPreferenceController.java
++++ b/src/com/android/settings/development/AdbRootPreferenceController.java
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2018 The LineageOS Project
++ * Copyright (C) 2018-2024 The LineageOS Project
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+@@ -71,6 +71,14 @@ public class AdbRootPreferenceController extends DeveloperOptionsPreferenceContr
+         return true;
+     }
+ 
++    @Override
++    protected void onDeveloperOptionsSwitchDisabled() {
++        super.onDeveloperOptionsSwitchDisabled();
++
++        mADBRootService.setEnabled(false);
++        ((SwitchPreference) mPreference).setChecked(false);
++    }
++
+     @Override
+     protected void onDeveloperOptionsSwitchEnabled() {
+         if (isAdminUser()) {
+-- 
+2.43.0
+

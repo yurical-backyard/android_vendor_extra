@@ -1,0 +1,95 @@
+From e73ddff7ce44dbcedd1a24dce177be1d6b76cc09 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 26 Feb 2024 06:53:07 +0800
+Subject: [PATCH] core: Gracefully handle unregistering of unregistered
+ receivers/services
+
+Change-Id: Ia3e7b82389765c3b6d798f4cb4fed3f4b055b880
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ core/java/android/app/ContextImpl.java |  4 +++-
+ core/java/android/app/LoadedApk.java   | 21 ++++++++++-----------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/core/java/android/app/ContextImpl.java b/core/java/android/app/ContextImpl.java
+index 82f4315d033e..f7acf954163d 100644
+--- a/core/java/android/app/ContextImpl.java
++++ b/core/java/android/app/ContextImpl.java
+@@ -1871,6 +1871,7 @@ class ContextImpl extends Context {
+         if (mPackageInfo != null) {
+             IIntentReceiver rd = mPackageInfo.forgetReceiverDispatcher(
+                     getOuterContext(), receiver);
++            if (rd == null) return;
+             try {
+                 ActivityManager.getService().unregisterReceiver(rd);
+             } catch (RemoteException e) {
+@@ -2162,11 +2163,12 @@ class ContextImpl extends Context {
+     @Override
+     public void unbindService(ServiceConnection conn) {
+         if (conn == null) {
+-            throw new IllegalArgumentException("connection is null");
++            return;
+         }
+         if (mPackageInfo != null) {
+             IServiceConnection sd = mPackageInfo.forgetServiceDispatcher(
+                     getOuterContext(), conn);
++            if (sd == null) return;
+             try {
+                 ActivityManager.getService().unbindService(sd);
+             } catch (RemoteException e) {
+diff --git a/core/java/android/app/LoadedApk.java b/core/java/android/app/LoadedApk.java
+index f092ce2363aa..36b7714b51f9 100644
+--- a/core/java/android/app/LoadedApk.java
++++ b/core/java/android/app/LoadedApk.java
+@@ -1658,19 +1658,18 @@ public final class LoadedApk {
+             if (holder != null) {
+                 rd = holder.get(r);
+                 if (rd != null) {
+-                    RuntimeException ex = rd.getUnregisterLocation();
+-                    throw new IllegalArgumentException(
++                    Slog.d(TAG, 
+                             "Unregistering Receiver " + r
+-                            + " that was already unregistered", ex);
++                            + " that was already unregistered");
+                 }
+             }
+             if (context == null) {
+-                throw new IllegalStateException("Unbinding Receiver " + r
++                Slog.d(TAG, "Unbinding Receiver " + r
+                         + " from Context that is no longer in use: " + context);
+             } else {
+-                throw new IllegalArgumentException("Receiver not registered: " + r);
++                Slog.d(TAG, "Receiver not registered: " + r);
+             }
+-
++            return null;
+         }
+     }
+ 
+@@ -1997,18 +1996,18 @@ public final class LoadedApk {
+             if (holder != null) {
+                 sd = holder.get(c);
+                 if (sd != null) {
+-                    RuntimeException ex = sd.getUnbindLocation();
+-                    throw new IllegalArgumentException(
++                    Slog.d(TAG,
+                             "Unbinding Service " + c
+-                            + " that was already unbound", ex);
++                            + " that was already unbound");
+                 }
+             }
+             if (context == null) {
+-                throw new IllegalStateException("Unbinding Service " + c
++                Slog.d(TAG, "Unbinding Service " + c
+                         + " from Context that is no longer in use: " + context);
+             } else {
+-                throw new IllegalArgumentException("Service not registered: " + c);
++               Slog.d(TAG, "Service not registered: " + c);
+             }
++            return null;
+         }
+     }
+ 
+-- 
+2.43.0
+

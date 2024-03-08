@@ -1,0 +1,35 @@
+From ff92e0664d52d8638a826f291d903213a53ae69b Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Thu, 7 Sep 2023 10:09:29 +0800
+Subject: [PATCH] PermissionController: Remove check/s for permission
+ controller version
+
+* this prevents bootloop when transitioning from prebuilt apex to source apex, no regressions seen since this patch was implemented on thirteen branch
+
+Change-Id: I31c6376fc77844ddb0918d8f9f7e3785129c9d2d
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../service/RuntimePermissionsUpgradeController.kt         | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/PermissionController/src/com/android/permissioncontroller/permission/service/RuntimePermissionsUpgradeController.kt b/PermissionController/src/com/android/permissioncontroller/permission/service/RuntimePermissionsUpgradeController.kt
+index 3405ab0..12ff9c5 100644
+--- a/PermissionController/src/com/android/permissioncontroller/permission/service/RuntimePermissionsUpgradeController.kt
++++ b/PermissionController/src/com/android/permissioncontroller/permission/service/RuntimePermissionsUpgradeController.kt
+@@ -68,13 +68,6 @@ internal object RuntimePermissionsUpgradeController {
+ 
+         GlobalScope.launch(IPC) {
+             val upgradedVersion = onUpgradeLocked(context, currentVersion)
+-            if (upgradedVersion != LATEST_VERSION) {
+-                Log.wtf("PermissionControllerService", "warning: upgrading permission database" +
+-                    " to version $LATEST_VERSION left it at $currentVersion instead; this is " +
+-                    "probably a bug. Did you update LATEST_VERSION?", Throwable())
+-                throw RuntimeException("db upgrade error")
+-            }
+-
+             if (storedVersion != upgradedVersion) {
+                 permissionManager.runtimePermissionsVersion = LATEST_VERSION
+             }
+-- 
+2.43.0
+

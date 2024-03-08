@@ -1,0 +1,31 @@
+From abd4e54da573bc3c37e96993cb688e4accd545dd Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sun, 17 Dec 2023 07:15:51 +0800
+Subject: [PATCH] hwui: CanvasContext: Don't crash when GrContext is
+ abandoned
+
+* some apps like download managers with browser support often abandons GrContext,
+  since this change is just to inline behaviour for vulkan skia, log the error for
+  app development purposes instead of crashing the processes
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ libs/hwui/renderthread/CanvasContext.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libs/hwui/renderthread/CanvasContext.cpp b/libs/hwui/renderthread/CanvasContext.cpp
+index caad41f0c8a8..9d29d37aadfc 100644
+--- a/libs/hwui/renderthread/CanvasContext.cpp
++++ b/libs/hwui/renderthread/CanvasContext.cpp
+@@ -544,7 +544,7 @@ Frame CanvasContext::getFrame() {
+ void CanvasContext::draw(bool solelyTextureViewUpdates) {
+     if (auto grContext = getGrContext()) {
+         if (grContext->abandoned()) {
+-            LOG_ALWAYS_FATAL("GrContext is abandoned/device lost at start of CanvasContext::draw");
++            ALOGW("GrContext is abandoned/device lost at start of CanvasContext::draw");
+             return;
+         }
+     }
+-- 
+2.43.0
+

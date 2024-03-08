@@ -1,0 +1,42 @@
+From 0b6f9f479d71eb102db36668bc1eb60b45455772 Mon Sep 17 00:00:00 2001
+From: Harsh Shandilya <msfjarvis@gmail.com>
+Date: Fri, 23 Jun 2017 12:05:02 +0530
+Subject: [PATCH] Suppress FingerprintManager logspam
+
+If FingerprintManager#isFingerprintHardwareDetected fails to detect
+a fingerprint sensor, it emits a warning in the logcat warn stream.
+
+This failure can only happen in the following cases
+ - Device lacks a fingerprint sensor
+ - Device has a dying/dead fingerprint sensor
+ - The FingerprintManager class lacks the manifest permission to
+   connect to the fingerprint hardware via system server
+
+All these are unlikely to be useful scenarios, so disable the logspam
+
+Might make more sense to restrict this function to be called only
+a finite times before the system gives up and assumes there is no
+usable fingerprint hardware on the device
+
+Change-Id: Ibe32d956ff89379ecacc1348748e3e7272f314d8
+Signed-off-by: Joey Huab <joey@evolution-x.org>
+---
+ core/java/android/hardware/fingerprint/FingerprintManager.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/android/hardware/fingerprint/FingerprintManager.java b/core/java/android/hardware/fingerprint/FingerprintManager.java
+index b3f8ae5fc700..074b9dd64a01 100644
+--- a/core/java/android/hardware/fingerprint/FingerprintManager.java
++++ b/core/java/android/hardware/fingerprint/FingerprintManager.java
+@@ -1199,7 +1199,7 @@ public class FingerprintManager implements BiometricAuthenticator, BiometricFing
+                 throw e.rethrowFromSystemServer();
+             }
+         } else {
+-            Slog.w(TAG, "isFingerprintHardwareDetected(): Service not connected!");
++            if (DEBUG) Slog.w(TAG, "isFingerprintHardwareDetected(): Service not connected!");
+         }
+         return false;
+     }
+-- 
+2.43.0
+

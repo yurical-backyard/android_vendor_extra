@@ -1,0 +1,129 @@
+From 7211e981896e265e4a3cc98bc52f54f7fe4ad79b Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Mon, 6 Dec 2021 00:54:11 +0530
+Subject: [PATCH] Settings: Use font configs instead fonts directly
+
+Change-Id: I2c93301a7a9aa640278c62912ee6a54dbe29589c
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+
+ Conflicts:
+	res/layout/crypt_keeper_pattern_sizes.xml
+---
+ res/layout/conversation_message_icon.xml                  | 2 +-
+ res/layout/sliding_tab_title_view.xml                     | 2 +-
+ res/values/styles.xml                                     | 8 ++++----
+ .../settings/datausage/DataUsageSummaryPreference.java    | 4 ++--
+ .../android/settings/deviceinfo/StorageWizardInit.java    | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/res/layout/conversation_message_icon.xml b/res/layout/conversation_message_icon.xml
+index 9f9f0ac76e8..eefee8ae7f5 100644
+--- a/res/layout/conversation_message_icon.xml
++++ b/res/layout/conversation_message_icon.xml
+@@ -18,7 +18,7 @@
+     android:id="@+id/conversation_icon"
+     android:layout_width="wrap_content"
+     android:layout_height="wrap_content"
+-    android:fontFamily="sans-serif"
++    android:fontFamily="@*android:string/config_bodyFontFamilyMedium"
+     android:textStyle="bold"
+     android:textSize="@dimen/conversation_message_contact_icon_text_size"
+     android:gravity="center" />
+diff --git a/res/layout/sliding_tab_title_view.xml b/res/layout/sliding_tab_title_view.xml
+index 5dead026365..35737e5af50 100644
+--- a/res/layout/sliding_tab_title_view.xml
++++ b/res/layout/sliding_tab_title_view.xml
+@@ -22,7 +22,7 @@
+     android:layout_height="wrap_content"
+     android:background="?android:attr/selectableItemBackground"
+     android:ellipsize="end"
+-    android:fontFamily="sans-serif-medium"
++    android:fontFamily="@*android:string/config_headlineFontFamily"
+     android:gravity="center"
+     android:maxLines="1"
+     android:padding="@dimen/pager_tabs_title_padding"
+diff --git a/res/values/styles.xml b/res/values/styles.xml
+index fb7f02541ef..db40d8b39ce 100644
+--- a/res/values/styles.xml
++++ b/res/values/styles.xml
+@@ -273,7 +273,7 @@
+     </style>
+ 
+     <style name="TextAppearance.ZenOnboardingButton">
+-        <item name="android:fontFamily">sans-serif-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textColor">?android:attr/colorAccent</item>
+         <item name="android:background">@*android:drawable/btn_borderless_rect</item>
+@@ -729,7 +729,7 @@
+         <item name="android:layout_marginBottom">36dp</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+@@ -745,7 +745,7 @@
+         <item name="android:layout_height">wrap_content</item>
+         <item name="android:textSize">16sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+@@ -754,7 +754,7 @@
+         <item name="android:layout_height">wrap_content</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:textColor">?android:attr/textColorSecondary</item>
+-        <item name="android:fontFamily">sans-serif</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+         <item name="android:gravity">start</item>
+     </style>
+ 
+diff --git a/src/com/android/settings/datausage/DataUsageSummaryPreference.java b/src/com/android/settings/datausage/DataUsageSummaryPreference.java
+index 86e01ed2688..70f899f191d 100644
+--- a/src/com/android/settings/datausage/DataUsageSummaryPreference.java
++++ b/src/com/android/settings/datausage/DataUsageSummaryPreference.java
+@@ -61,7 +61,7 @@ public class DataUsageSummaryPreference extends Preference {
+     private static final long WARNING_AGE = TimeUnit.HOURS.toMillis(6L);
+     @VisibleForTesting
+     static final Typeface SANS_SERIF_MEDIUM =
+-            Typeface.create("sans-serif-medium", Typeface.NORMAL);
++            Typeface.create("@*android:string/config_bodyFontFamilyMedium", Typeface.NORMAL);
+ 
+     private boolean mChartEnabled = true;
+     private CharSequence mStartLabel;
+@@ -338,7 +338,7 @@ public class DataUsageSummaryPreference extends Preference {
+ 
+             if (updateAgeMillis <= WARNING_AGE) {
+                 setCarrierInfoTextStyle(
+-                        carrierInfo, android.R.attr.textColorSecondary, Typeface.SANS_SERIF);
++                        carrierInfo, android.R.attr.textColorSecondary, Typeface.DEFAULT);
+             } else {
+                 setCarrierInfoTextStyle(carrierInfo, android.R.attr.colorError, SANS_SERIF_MEDIUM);
+             }
+diff --git a/src/com/android/settings/deviceinfo/StorageWizardInit.java b/src/com/android/settings/deviceinfo/StorageWizardInit.java
+index 8d049836b6b..5bd3d936a17 100644
+--- a/src/com/android/settings/deviceinfo/StorageWizardInit.java
++++ b/src/com/android/settings/deviceinfo/StorageWizardInit.java
+@@ -170,7 +170,7 @@ public class StorageWizardInit extends StorageWizardBase {
+     private Spannable styleFont(String text) {
+         Spannable s = (Spannable) Html.fromHtml(text);
+         for (URLSpan span : s.getSpans(0, s.length(), URLSpan.class)) {
+-            TypefaceSpan typefaceSpan = new TypefaceSpan("sans-serif-medium");
++            TypefaceSpan typefaceSpan = new TypefaceSpan("@*android:string/config_bodyFontFamilyMedium");
+             s.setSpan(typefaceSpan, s.getSpanStart(span), s.getSpanEnd(span), 0);
+         }
+         return s;
+@@ -193,4 +193,4 @@ public class StorageWizardInit extends StorageWizardBase {
+                 || event.getY() > v.getMeasuredHeight());
+         }
+     };
+-}
+\ No newline at end of file
++}
+-- 
+2.43.0
+

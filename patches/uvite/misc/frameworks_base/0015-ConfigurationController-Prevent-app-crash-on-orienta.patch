@@ -1,0 +1,52 @@
+From 3e7004c314ff8b8112f5d9e537b224b79f1887d4 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Fri, 10 Mar 2023 20:18:18 +0800
+Subject: [PATCH] ConfigurationController: Prevent app crash on
+ orientation change
+
+* performConfigurationChanged expects a non-null callback due to a existing null check (callbacks != null), for some reasons the config has no null check not sure if its non-null or it has a null check somewhere else
+
+* attempt to fix random app crash on apps that starts by changing orientation:
+
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: FATAL EXCEPTION: main
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: Process: com.android.systemui, PID: 3024
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke interface method 'void com.android.systemui.statusbar.policy.ConfigurationController$ConfigurationListener.onConfigChanged(android.content.res.Configuration)' on a null object reference
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at com.android.systemui.statusbar.phone.ConfigurationControllerImpl.onConfigurationChanged(ConfigurationControllerImpl.kt:31)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at com.android.systemui.SystemUIApplication.onConfigurationChanged(SystemUIApplication.java:46)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ConfigurationController.performConfigurationChanged(ConfigurationController.java:246)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ConfigurationController.handleConfigurationChanged(ConfigurationController.java:220)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ConfigurationController.handleConfigurationChanged(ConfigurationController.java:131)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ActivityThread.handleConfigurationChanged(ActivityThread.java:5998)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.servertransaction.ConfigurationChangeItem.execute(ConfigurationChangeItem.java:43)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:138)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2308)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:201)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:288)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7943)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-04 05:57:08.186  3024  3024 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:848)
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ core/java/android/app/ConfigurationController.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/android/app/ConfigurationController.java b/core/java/android/app/ConfigurationController.java
+index 5b008207d160..872b3075c534 100644
+--- a/core/java/android/app/ConfigurationController.java
++++ b/core/java/android/app/ConfigurationController.java
+@@ -216,7 +216,7 @@ class ConfigurationController {
+             final int size = callbacks.size();
+             for (int i = 0; i < size; i++) {
+                 ComponentCallbacks2 cb = callbacks.get(i);
+-                if (!equivalent) {
++                if (!equivalent && cb != null && config != null) {
+                     performConfigurationChanged(cb, config);
+                 }
+             }
+-- 
+2.43.0
+

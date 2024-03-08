@@ -1,0 +1,197 @@
+From 2c3a44e79b779c17ac53fdb3449184a82f9bafdf Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Wed, 16 Sep 2020 19:32:44 +0200
+Subject: [PATCH] Squashed import of adb root patches
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Sat Nov 2 22:46:51 2019 +0100
+
+    Expose the ADBRoot interface to priv-apps
+
+    Change-Id: I493f3322b19b6474bf8899a103156794ef412ae2
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Sun Nov 3 12:17:17 2019 +0100
+
+    Whitelist settings to use adb root permission
+
+    Change-Id: I93122777c82fad33be04fcce002ba1a8468cacbe
+
+Author: Michael Bestas <mkbestas@lineageos.org>
+Date:   Sun Nov 17 14:31:04 2019 +0200
+
+    Fix ADB root system API extension
+
+    * Fixes checkapi:
+      out/soong/.intermediates/frameworks/base/system-api-stubs-docs/android_common/current-apicheck/srcjars/android/Manifest.java:3435:
+      error: Added field android.Manifest.permission.ADBROOT to the system API [AddedField]
+
+      error: Added package android.adb to the system API [AddedPackage]
+
+    Change-Id: Idd509c31d961a0b20fac8cccd2c83c6bf23c5a38
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sat Nov 23 21:52:19 2019 +0800
+
+    ADBRootService: Deal with binder death
+
+    Change-Id: Id5e4a455ea16a4158086816abf093d8f603d4e49
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Fri Nov 22 20:12:33 2019 +0800
+
+    ADBRootService: Remove redundant permission check
+
+     * First of all, the check is performed in a helper class, one can
+       easily bypass it by directly issuing the binder API.
+     * On the other hand, enforceCallingOrSelfPermission allows root and
+       system UID to do everything, i.e., any process running in system UID
+       is allowed to pass the check, including Settings app, thus it's
+       simply a no-op.
+
+    Change-Id: I82f58d6165c2ef35c61047d5899de3e8ca6f7f39
+
+Author: LuK1337 <priv.luk@gmail.com>
+Date:   Thu Mar 24 09:33:36 2022 +0100
+
+    ADBRootService: Add isSupported() method to check if we are debuggable
+
+    This allows us to show the preference in Settings even if
+    Build.IS_DEBUGGABLE is false.
+
+    Change-Id: I8302f1de25ecebd7fabff5d529136dc48819ee3a
+
+Change-Id: I1c90ad99960a2055339dfda9a03cd4f111ea40a0
+---
+ Android.bp                                |   2 +
+ core/java/android/adb/ADBRootService.java | 105 ++++++++++++++++++++++
+ 2 files changed, 107 insertions(+)
+ create mode 100644 core/java/android/adb/ADBRootService.java
+
+diff --git a/Android.bp b/Android.bp
+index 9362e7a457de..52fcd662ea07 100755
+--- a/Android.bp
++++ b/Android.bp
+@@ -134,6 +134,8 @@ filegroup {
+         ":vold_aidl",
+         ":deviceproductinfoconstants_aidl",
+ 
++        ":adbrootservice_aidl",
++
+         // For the generated R.java and Manifest.java
+         ":framework-res{.aapt.srcjar}",
+ 
+diff --git a/core/java/android/adb/ADBRootService.java b/core/java/android/adb/ADBRootService.java
+new file mode 100644
+index 000000000000..52610eadad71
+--- /dev/null
++++ b/core/java/android/adb/ADBRootService.java
+@@ -0,0 +1,105 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package android.adb;
++
++import android.adbroot.IADBRootService;
++import android.os.IBinder;
++import android.os.RemoteException;
++import android.os.ServiceManager;
++import android.util.Slog;
++
++/**
++ * {@hide}
++ */
++public class ADBRootService {
++    private static final String TAG = "ADBRootService";
++
++    private static final String ADB_ROOT_SERVICE = "adbroot_service";
++
++    private IADBRootService mService;
++
++    private final IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
++        @Override
++        public void binderDied() {
++            if (mService != null) {
++                mService.asBinder().unlinkToDeath(this, 0);
++            }
++            mService = null;
++        }
++    };
++
++    private synchronized IADBRootService getService()
++            throws RemoteException {
++        if (mService != null) {
++            return mService;
++        }
++
++        final IBinder service = ServiceManager.getService(ADB_ROOT_SERVICE);
++        if (service != null) {
++            service.linkToDeath(mDeathRecipient, 0);
++            mService = IADBRootService.Stub.asInterface(service);
++            return mService;
++        }
++
++        Slog.e(TAG, "Unable to acquire ADBRootService");
++        return null;
++    }
++
++    /**
++     * @hide
++     */
++    public boolean isSupported() {
++        try {
++            final IADBRootService svc = getService();
++            if (svc != null) {
++                return svc.isSupported();
++            }
++        } catch (RemoteException e) {
++            throw e.rethrowFromSystemServer();
++        }
++        return false;
++    }
++
++    /**
++     * @hide
++     */
++    public void setEnabled(boolean enable) {
++        try {
++            final IADBRootService svc = getService();
++            if (svc != null) {
++                svc.setEnabled(enable);
++            }
++        } catch (RemoteException e) {
++            throw e.rethrowFromSystemServer();
++        }
++    }
++
++    /**
++     * @hide
++     */
++    public boolean getEnabled() {
++        try {
++            final IADBRootService svc = getService();
++            if (svc != null) {
++                return svc.getEnabled();
++            }
++        } catch (RemoteException e) {
++            throw e.rethrowFromSystemServer();
++        }
++        return false;
++    }
++}
+-- 
+2.43.0
+

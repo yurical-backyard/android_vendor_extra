@@ -1,0 +1,32 @@
+From 64ca991c61fefd3efe30e4425520e09db2bebf67 Mon Sep 17 00:00:00 2001
+From: Vishalcj17 <vishalcj@aospa.co>
+Date: Sat, 4 Nov 2023 01:25:00 +0900
+Subject: [PATCH] fs_mgr: Remove bootloader restrictions for adb remount
+
+Change-Id: Iac550fc2ed01da220bf6cd472d0dd1905e78221d
+---
+ fs_mgr/fs_mgr_remount.cpp | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/fs_mgr/fs_mgr_remount.cpp b/fs_mgr/fs_mgr_remount.cpp
+index 5a9f391a4..1f107f57d 100644
+--- a/fs_mgr/fs_mgr_remount.cpp
++++ b/fs_mgr/fs_mgr_remount.cpp
+@@ -630,10 +630,14 @@ int main(int argc, char* argv[]) {
+         return EXIT_FAILURE;
+     }
+ 
++#if 0
++    // We already use safety net hacks which spoof to green state.
++    // Remove this check completely.
+     if (android::base::GetProperty("ro.boot.verifiedbootstate", "") != "orange") {
+         LOG(ERROR) << "Device must be bootloader unlocked";
+         return EXIT_FAILURE;
+     }
++#endif
+ 
+     // Start a threadpool to service waitForService() callbacks as
+     // fs_mgr_overlayfs_* might call waitForService() to get the image service.
+-- 
+2.43.0
+

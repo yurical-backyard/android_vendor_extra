@@ -1,0 +1,54 @@
+From 55085636cff63303cd0beb4345d8d35846417744 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Fri, 29 Mar 2024 17:58:57 +0900
+Subject: [PATCH] Revert "graphics: Override google fonts with
+ user-selected overlays"
+
+This reverts commit 2b465a16c3fe9c5be1cd805087de60ad09e2eb83.
+---
+ graphics/java/android/graphics/Typeface.java | 18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
+
+diff --git a/graphics/java/android/graphics/Typeface.java b/graphics/java/android/graphics/Typeface.java
+index 26076c8ef195..4e3455f06e4c 100644
+--- a/graphics/java/android/graphics/Typeface.java
++++ b/graphics/java/android/graphics/Typeface.java
+@@ -1432,19 +1432,12 @@ public class Typeface {
+     public static void updateDefaultFont(Resources res) {
+         synchronized (SYSTEM_FONT_MAP_LOCK) {
+             String familyName = res.getString(com.android.internal.R.string.config_bodyFontFamily);
+-            String headlineFamilyName = res.getString(
+-                    com.android.internal.R.string.config_headlineFontFamily);
+             Typeface typeface = sSystemFontMap.get(familyName);
+-            Typeface headlineTypeface = sSystemFontMap.get(headlineFamilyName);
+             if (typeface == null) {
+-                // This should never happen, but if the system font family name is invalid, just
+-                // return instead of crashing the app.
++                // This should never happen, but if the system font family name is invalid, just return
++                // instead of crashing the app.
+                 return;
+             }
+-            if (headlineTypeface == null) {
+-                // Fallback to body font
+-                headlineTypeface = typeface;
+-            }
+ 
+             setDefault(typeface);
+ 
+@@ -1461,13 +1454,6 @@ public class Typeface {
+             sSystemFontOverrides.put("sans-serif-black", create(typeface, 900, false));
+ 
+             setPublicDefaults(familyName);
+-
+-            // Replace google fonts
+-            sSystemFontOverrides.put("google-sans-text", typeface);
+-            sSystemFontOverrides.put("google-sans-text-medium", create(typeface, 500, false));
+-
+-            sSystemFontOverrides.put("google-sans", headlineTypeface);
+-            sSystemFontOverrides.put("google-sans-medium", create(headlineTypeface, 500, false));
+         }
+     }
+ 
+-- 
+2.43.0
+

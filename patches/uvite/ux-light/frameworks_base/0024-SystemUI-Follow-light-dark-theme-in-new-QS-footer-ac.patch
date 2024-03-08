@@ -1,0 +1,72 @@
+From cac19549676854de9d0d1a0057cd3925579438fa Mon Sep 17 00:00:00 2001
+From: Tim Zimmermann <tim@linux4.de>
+Date: Thu, 16 Mar 2023 07:26:59 +0100
+Subject: [PATCH] SystemUI: Follow light/dark theme in new QS footer
+ actions
+
+* Needed after 2feceb2c407440c3c19f567eb20855d3d3717f6b
+* Only settings and power button needed to be changed
+
+Change-Id: I14b04ba206d31784d9e5a1351d1fcbb1d258e52b
+---
+ .../qs/footer/ui/viewmodel/FooterActionsViewModel.kt   |  8 ++++++--
+ .../footer/ui/viewmodel/FooterActionsViewModelTest.kt  | 10 ++++++++--
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
+index b3596a254b7d..2bf185f46b7c 100644
+--- a/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
++++ b/packages/SystemUI/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModel.kt
+@@ -145,7 +145,11 @@ class FooterActionsViewModel(
+                 R.drawable.ic_settings,
+                 ContentDescription.Resource(R.string.accessibility_quick_settings_settings)
+             ),
+-            iconTint = null,
++            iconTint =
++                Utils.getColorAttrDefaultColor(
++                    context,
++                    com.android.internal.R.attr.textColorPrimary,
++                ),
+             backgroundColor = R.attr.offStateColor,
+             this::onSettingsButtonClicked,
+         )
+@@ -162,7 +166,7 @@ class FooterActionsViewModel(
+                 iconTint =
+                     Utils.getColorAttrDefaultColor(
+                         context,
+-                        com.android.internal.R.attr.textColorOnAccent,
++                        com.android.internal.R.attr.textColorPrimaryInverse,
+                     ),
+                 backgroundColor = com.android.internal.R.attr.colorAccent,
+                 this::onPowerButtonClicked,
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt b/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
+index 2cc6709d0f37..ccff62fc76ec 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/qs/footer/ui/viewmodel/FooterActionsViewModelTest.kt
+@@ -85,7 +85,13 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+                 )
+             )
+         assertThat(settings.backgroundColor).isEqualTo(R.attr.offStateColor)
+-        assertThat(settings.iconTint).isNull()
++        assertThat(settings.iconTint)
++            .isEqualTo(
++                Utils.getColorAttrDefaultColor(
++                    context,
++                    com.android.internal.R.attr.textColorPrimary,
++                ),
++            )
+     }
+ 
+     @Test
+@@ -110,7 +116,7 @@ class FooterActionsViewModelTest : SysuiTestCase() {
+             .isEqualTo(
+                 Utils.getColorAttrDefaultColor(
+                     context,
+-                    com.android.internal.R.attr.textColorOnAccent,
++                    com.android.internal.R.attr.textColorPrimaryInverse,
+                 ),
+             )
+     }
+-- 
+2.43.0
+

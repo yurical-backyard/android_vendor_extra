@@ -1,0 +1,39 @@
+From b11125443e4ea6077817113f76ba37aa7a73f56e Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 15 May 2023 14:22:47 +0800
+Subject: [PATCH] services: Fix NPE caused by null connectionToken
+
+14:02:19.176  1373  1961 W BinderNative: java.lang.NullPointerException: connectionToken must not be null
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at java.util.Objects.requireNonNull(Objects.java:245)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at com.android.server.input.InputManagerService.removeInputChannel(InputManagerService.java:891)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at com.android.server.input.InputManagerService.removeSpyWindowGestureMonitor(InputManagerService.java:837)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at com.android.server.input.InputManagerService.lambda$createSpyWindowGestureMonitor$0(InputManagerService.java:816)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at com.android.server.input.InputManagerService.$r8$lambda$ZQrlgG0pA6GPzUR-zOrYur-LkMU(Unknown Source:0)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at com.android.server.input.InputManagerService$$ExternalSyntheticLambda7.binderDied(Unknown Source:4)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at android.os.IBinder$DeathRecipient.binderDied(IBinder.java:317)
+05-15 14:02:19.176  1373  1961 W BinderNative: 	at android.os.BinderProxy.sendDeathNotice(BinderProxy.java:704)
+
+Change-Id: I7a6d895159d6c5d0e6705dac3031cc904d02936c
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../java/com/android/server/input/InputManagerService.java    | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/services/core/java/com/android/server/input/InputManagerService.java b/services/core/java/com/android/server/input/InputManagerService.java
+index ff69719c9497..b9e619767547 100644
+--- a/services/core/java/com/android/server/input/InputManagerService.java
++++ b/services/core/java/com/android/server/input/InputManagerService.java
+@@ -732,6 +732,10 @@ public class InputManagerService extends IInputManager.Stub
+     }
+ 
+     private void removeSpyWindowGestureMonitor(IBinder inputChannelToken) {
++        if (inputChannelToken == null) {
++            return; // Handle the null inputChannelToken gracefully
++        }
++        
+         final GestureMonitorSpyWindow monitor;
+         synchronized (mInputMonitors) {
+             monitor = mInputMonitors.remove(inputChannelToken);
+-- 
+2.43.0
+

@@ -1,0 +1,66 @@
+From 893e40c6809cd5e697a769e6c41b969f4fe537b3 Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 21:04:32 +0800
+Subject: [PATCH] Revert "Implemented Hover support for Power button in
+ quick settings footer."
+
+This reverts commit 2c6dcd0e06a16279fa88c350da2122195a9e5082.
+
+Change-Id: Ie97799ccdbd1b6f43a7583a0c6d1c629166f6472
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../qs_footer_power_button_overlay_color.xml  | 22 -------------------
+ .../qs_footer_action_circle_color.xml         |  6 -----
+ 2 files changed, 28 deletions(-)
+ delete mode 100644 packages/SystemUI/res/color/qs_footer_power_button_overlay_color.xml
+
+diff --git a/packages/SystemUI/res/color/qs_footer_power_button_overlay_color.xml b/packages/SystemUI/res/color/qs_footer_power_button_overlay_color.xml
+deleted file mode 100644
+index a8abd793bd00..000000000000
+--- a/packages/SystemUI/res/color/qs_footer_power_button_overlay_color.xml
++++ /dev/null
+@@ -1,22 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-
+-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+-    <item android:state_pressed="true" android:color="?attr/onShadeActive" android:alpha="0.12" />
+-    <item android:state_hovered="true" android:color="?attr/onShadeActive" android:alpha="0.09" />
+-    <item android:color="@color/transparent" />
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml b/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
+index 83ef24c2db53..6a365000a21c 100644
+--- a/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
++++ b/packages/SystemUI/res/drawable/qs_footer_action_circle_color.xml
+@@ -32,12 +32,6 @@
+                 <corners android:radius="@dimen/qs_footer_action_corner_radius"/>
+             </shape>
+         </item>
+-        <item>
+-            <shape android:shape="rectangle">
+-                <solid android:color="@color/qs_footer_power_button_overlay_color"/>
+-                <corners android:radius="@dimen/qs_footer_action_corner_radius"/>
+-            </shape>
+-        </item>
+ 
+     </ripple>
+ </inset>
+\ No newline at end of file
+-- 
+2.43.0
+

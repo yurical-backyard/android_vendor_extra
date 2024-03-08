@@ -1,0 +1,222 @@
+From 58ab0132b53b2e8976c6aac25a2be411a986041b Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 21:02:19 +0800
+Subject: [PATCH] Revert "Disabling the Done button when system applying
+ new font size"
+
+This reverts commit b68b8465bb36ed06dbae5e9245e9e138999bf120.
+
+Change-Id: I021f2dfab4e3df82a94c295744bb874bd1fdfa01
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../color/qs_dialog_btn_filled_background.xml | 23 ---------------
+ .../color/qs_dialog_btn_filled_text_color.xml | 23 ---------------
+ .../res/drawable/qs_dialog_btn_filled.xml     |  3 +-
+ packages/SystemUI/res/values/styles.xml       |  2 +-
+ .../fontscaling/FontScalingDialog.kt          | 17 ++++-------
+ .../fontscaling/FontScalingDialogTest.kt      | 28 +------------------
+ 6 files changed, 9 insertions(+), 87 deletions(-)
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_filled_background.xml
+ delete mode 100644 packages/SystemUI/res/color/qs_dialog_btn_filled_text_color.xml
+
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_filled_background.xml b/packages/SystemUI/res/color/qs_dialog_btn_filled_background.xml
+deleted file mode 100644
+index 40bab5ed08f2..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_filled_background.xml
++++ /dev/null
+@@ -1,23 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-          xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-          android:color="?androidprv:attr/materialColorPrimary"
+-          android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorPrimary"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/color/qs_dialog_btn_filled_text_color.xml b/packages/SystemUI/res/color/qs_dialog_btn_filled_text_color.xml
+deleted file mode 100644
+index e76ad991a92c..000000000000
+--- a/packages/SystemUI/res/color/qs_dialog_btn_filled_text_color.xml
++++ /dev/null
+@@ -1,23 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-  ~ Copyright (C) 2023 The Android Open Source Project
+-  ~
+-  ~ Licensed under the Apache License, Version 2.0 (the "License");
+-  ~ you may not use this file except in compliance with the License.
+-  ~ You may obtain a copy of the License at
+-  ~
+-  ~      http://www.apache.org/licenses/LICENSE-2.0
+-  ~
+-  ~ Unless required by applicable law or agreed to in writing, software
+-  ~ distributed under the License is distributed on an "AS IS" BASIS,
+-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-  ~ See the License for the specific language governing permissions and
+-  ~ limitations under the License.
+-  -->
+-<selector xmlns:android="http://schemas.android.com/apk/res/android"
+-          xmlns:androidprv="http://schemas.android.com/apk/prv/res/android">
+-    <item android:state_enabled="false"
+-          android:color="?androidprv:attr/materialColorOnPrimary"
+-          android:alpha="0.30"/>
+-    <item android:color="?androidprv:attr/materialColorOnPrimary"/>
+-</selector>
+\ No newline at end of file
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
+index 9bc8b53b308e..c4e45bf2c223 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
+@@ -15,6 +15,7 @@
+   ~ limitations under the License.
+   -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android"
++       xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+        android:insetTop="@dimen/dialog_button_vertical_inset"
+        android:insetBottom="@dimen/dialog_button_vertical_inset">
+     <ripple android:color="?android:attr/colorControlHighlight">
+@@ -27,7 +28,7 @@
+         <item>
+             <shape android:shape="rectangle">
+                 <corners android:radius="?android:attr/buttonCornerRadius"/>
+-                <solid android:color="@color/qs_dialog_btn_filled_background"/>
++                <solid android:color="?androidprv:attr/materialColorPrimary"/>
+                 <padding android:left="@dimen/dialog_button_horizontal_padding"
+                          android:top="@dimen/dialog_button_vertical_padding"
+                          android:right="@dimen/dialog_button_horizontal_padding"
+diff --git a/packages/SystemUI/res/values/styles.xml b/packages/SystemUI/res/values/styles.xml
+index e9ef2ae63eb8..d3238178b81c 100644
+--- a/packages/SystemUI/res/values/styles.xml
++++ b/packages/SystemUI/res/values/styles.xml
+@@ -1101,7 +1101,7 @@
+     <style name="Widget.Dialog.Button">
+         <item name="android:buttonCornerRadius">28dp</item>
+         <item name="android:background">@drawable/qs_dialog_btn_filled</item>
+-        <item name="android:textColor">@color/qs_dialog_btn_filled_text_color</item>
++        <item name="android:textColor">?androidprv:attr/materialColorOnPrimary</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:lineHeight">20sp</item>
+         <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+diff --git a/packages/SystemUI/src/com/android/systemui/accessibility/fontscaling/FontScalingDialog.kt b/packages/SystemUI/src/com/android/systemui/accessibility/fontscaling/FontScalingDialog.kt
+index 0ef256d41157..783460c325fa 100644
+--- a/packages/SystemUI/src/com/android/systemui/accessibility/fontscaling/FontScalingDialog.kt
++++ b/packages/SystemUI/src/com/android/systemui/accessibility/fontscaling/FontScalingDialog.kt
+@@ -145,8 +145,6 @@ class FontScalingDialog(
+      */
+     @MainThread
+     fun updateFontScaleDelayed(delayMsFromSource: Long) {
+-        doneButton.isEnabled = false
+-
+         var delayMs = delayMsFromSource
+         if (systemClock.elapsedRealtime() - lastUpdateTime < MIN_UPDATE_INTERVAL_MS) {
+             delayMs += MIN_UPDATE_INTERVAL_MS
+@@ -199,22 +197,17 @@ class FontScalingDialog(
+             title.post {
+                 title.setTextAppearance(R.style.TextAppearance_Dialog_Title)
+                 doneButton.setTextAppearance(R.style.Widget_Dialog_Button)
+-                doneButton.isEnabled = true
+             }
+         }
+     }
+ 
+     @WorkerThread
+     fun updateFontScale() {
+-        if (
+-            !systemSettings.putStringForUser(
+-                Settings.System.FONT_SCALE,
+-                strEntryValues[lastProgress.get()],
+-                userTracker.userId
+-            )
+-        ) {
+-            title.post { doneButton.isEnabled = true }
+-        }
++        systemSettings.putStringForUser(
++            Settings.System.FONT_SCALE,
++            strEntryValues[lastProgress.get()],
++            userTracker.userId
++        )
+     }
+ 
+     @WorkerThread
+diff --git a/packages/SystemUI/tests/src/com/android/systemui/accessibility/fontscaling/FontScalingDialogTest.kt b/packages/SystemUI/tests/src/com/android/systemui/accessibility/fontscaling/FontScalingDialogTest.kt
+index 7b99314692b4..d5e6881500bc 100644
+--- a/packages/SystemUI/tests/src/com/android/systemui/accessibility/fontscaling/FontScalingDialogTest.kt
++++ b/packages/SystemUI/tests/src/com/android/systemui/accessibility/fontscaling/FontScalingDialogTest.kt
+@@ -15,13 +15,11 @@
+  */
+ package com.android.systemui.accessibility.fontscaling
+ 
+-import android.content.res.Configuration
+ import android.os.Handler
+ import android.provider.Settings
+ import android.testing.AndroidTestingRunner
+ import android.testing.TestableLooper
+ import android.view.ViewGroup
+-import android.widget.Button
+ import android.widget.SeekBar
+ import androidx.test.filters.SmallTest
+ import com.android.systemui.R
+@@ -63,7 +61,6 @@ class FontScalingDialogTest : SysuiTestCase() {
+     private lateinit var secureSettings: SecureSettings
+     private lateinit var systemClock: FakeSystemClock
+     private lateinit var backgroundDelayableExecutor: FakeExecutor
+-    private lateinit var testableLooper: TestableLooper
+     private val fontSizeValueArray: Array<String> =
+         mContext
+             .getResources()
+@@ -76,8 +73,7 @@ class FontScalingDialogTest : SysuiTestCase() {
+     @Before
+     fun setUp() {
+         MockitoAnnotations.initMocks(this)
+-        testableLooper = TestableLooper.get(this)
+-        val mainHandler = Handler(testableLooper.looper)
++        val mainHandler = Handler(TestableLooper.get(this).getLooper())
+         systemSettings = FakeSettings()
+         // Guarantee that the systemSettings always starts with the default font scale.
+         systemSettings.putFloatForUser(Settings.System.FONT_SCALE, 1.0f, userTracker.userId)
+@@ -290,26 +286,4 @@ class FontScalingDialogTest : SysuiTestCase() {
+         verify(fontScalingDialog).createTextPreview(/* index= */ 0)
+         fontScalingDialog.dismiss()
+     }
+-
+-    @Test
+-    fun changeFontSize_buttonIsDisabledBeforeFontSizeChangeFinishes() {
+-        fontScalingDialog.show()
+-
+-        val iconEndFrame: ViewGroup = fontScalingDialog.findViewById(R.id.icon_end_frame)!!
+-        val doneButton: Button = fontScalingDialog.findViewById(com.android.internal.R.id.button1)!!
+-
+-        iconEndFrame.performClick()
+-        backgroundDelayableExecutor.runAllReady()
+-        backgroundDelayableExecutor.advanceClockToNext()
+-        backgroundDelayableExecutor.runAllReady()
+-
+-        // Verify that the button is disabled before receiving onConfigurationChanged
+-        assertThat(doneButton.isEnabled).isFalse()
+-
+-        val config = Configuration()
+-        config.fontScale = 1.15f
+-        fontScalingDialog.onConfigurationChanged(config)
+-        testableLooper.processAllMessages()
+-        assertThat(doneButton.isEnabled).isTrue()
+-    }
+ }
+-- 
+2.43.0
+

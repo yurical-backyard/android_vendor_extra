@@ -1,0 +1,43 @@
+From e83a75470719bcce6036f210c9916a2a96b37921 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 30 Oct 2023 17:52:18 +0800
+Subject: [PATCH] BroadcastReceiver: Gracefully handle redundant
+ broadcasts
+
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: FATAL EXCEPTION: main
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: Process: com.android.systemui, PID: 3580
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: java.lang.IllegalStateException: Broadcast already finished
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.content.BroadcastReceiver$PendingResult.sendFinished(BroadcastReceiver.java:303)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.content.BroadcastReceiver$PendingResult.finish(BroadcastReceiver.java:288)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at com.google.android.systemui.assist.OpaEnabledReceiver$$ExternalSyntheticLambda1.run(R8$$SyntheticClass:0)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.os.Handler.handleCallback(Handler.java:958)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:99)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8177)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:552)
+10-30 12:08:34.084  3580  3580 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:971)
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ core/java/android/content/BroadcastReceiver.java | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/android/content/BroadcastReceiver.java b/core/java/android/content/BroadcastReceiver.java
+index d7195a76d873..8a683cc8f02e 100644
+--- a/core/java/android/content/BroadcastReceiver.java
++++ b/core/java/android/content/BroadcastReceiver.java
+@@ -300,7 +300,8 @@ public abstract class BroadcastReceiver {
+         public void sendFinished(IActivityManager am) {
+             synchronized (this) {
+                 if (mFinished) {
+-                    throw new IllegalStateException("Broadcast already finished");
++                    Log.d("BroadcastReceiver: ", "attempt to perform sendFinished on a broadcast that is already finished");
++                    return;
+                 }
+                 mFinished = true;
+ 
+-- 
+2.43.0
+

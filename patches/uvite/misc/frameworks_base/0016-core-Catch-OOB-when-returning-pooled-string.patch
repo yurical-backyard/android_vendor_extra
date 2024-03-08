@@ -1,0 +1,73 @@
+From d9fbd3cbd50d5ceb9a570969a743d9fc6219d997 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 5 Jun 2023 08:03:12 +0800
+Subject: [PATCH] core: Catch OOB when returning pooled string
+
+Caused by:
+E AndroidRuntime: java.lang.IndexOutOfBoundsException
+E AndroidRuntime:        at android.content.res.StringBlock.nativeGetString(Native Method)
+E AndroidRuntime:        at android.content.res.StringBlock.getSequence(StringBlock.java:124)
+E AndroidRuntime:        at android.content.res.ApkAssets.getStringFromPool(ApkAssets.java:351)
+E AndroidRuntime:        at android.content.res.AssetManager.getPooledStringForCookie(AssetManager.java:869)
+E AndroidRuntime:        at android.content.res.TypedArray.loadStringValueAt(TypedArray.java:1400)
+E AndroidRuntime:        at android.content.res.TypedArray.getValueAt(TypedArray.java:1385)
+E AndroidRuntime:        at android.content.res.TypedArray.getFont(TypedArray.java:1042)
+E AndroidRuntime:        at android.widget.TextView.readTextAppearance(TextView.java:4154)
+E AndroidRuntime:        at android.widget.TextView.setTextAppearance(TextView.java:3967)
+E AndroidRuntime:        at android.widget.TextView.setTextAppearance(TextView.java:3954)
+E AndroidRuntime:        at com.android.systemui.shade.ShadeHeaderController$configurationControllerListener$1.onDensityOrFontScaleChanged(ShadeHeaderController.kt:14)
+E AndroidRuntime:        at com.android.systemui.statusbar.phone.ConfigurationControllerImpl.addCallback(ConfigurationControllerImpl.kt:7)
+E AndroidRuntime:        at com.android.systemui.shade.ShadeHeaderController.onViewAttached(ShadeHeaderController.kt:38)
+E AndroidRuntime:        at com.android.systemui.util.ViewController$1.onViewAttachedToWindow(ViewController.java:2)
+E AndroidRuntime:        at android.view.View.dispatchAttachedToWindow(View.java:21376)
+E AndroidRuntime:        at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3491)
+E AndroidRuntime:        at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+E AndroidRuntime:        at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+E AndroidRuntime:        at android.view.ViewGroup.dispatchAttachedToWindow(ViewGroup.java:3498)
+E AndroidRuntime:        at android.view.ViewRootImpl.performTraversals(ViewRootImpl.java:2898)
+E AndroidRuntime:        at android.view.ViewRootImpl.doTraversal(ViewRootImpl.java:2369)
+E AndroidRuntime:        at android.view.ViewRootImpl$TraversalRunnable.run(ViewRootImpl.java:9309)
+E AndroidRuntime:        at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1231)
+E AndroidRuntime:        at android.view.Choreographer$CallbackRecord.run(Choreographer.java:1239)
+E AndroidRuntime:        at android.view.Choreographer.doCallbacks(Choreographer.java:899)
+E AndroidRuntime:        at android.view.Choreographer.doFrame(Choreographer.java:832)
+E AndroidRuntime:        at android.view.Choreographer$FrameDisplayEventReceiver.run(Choreographer.java:1214)
+E AndroidRuntime:        at android.os.Handler.handleCallback(Handler.java:942)
+E AndroidRuntime:        at android.os.Handler.dispatchMessage(Handler.java:99)
+E AndroidRuntime:        at android.os.Looper.loopOnce(Looper.java:201)
+E AndroidRuntime:        at android.os.Looper.loop(Looper.java:288)
+E AndroidRuntime:        at android.app.ActivityThread.main(ActivityThread.java:7930)
+E AndroidRuntime:        at java.lang.reflect.Method.invoke(Native Method)
+E AndroidRuntime:        at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+E AndroidRuntime:        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:854)
+
+Change-Id: I539754f774c63bbccefcf75992d7ad2988359f14
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ core/java/android/content/res/AssetManager.java | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/core/java/android/content/res/AssetManager.java b/core/java/android/content/res/AssetManager.java
+index 0f284f491c29..1c625eaf760f 100644
+--- a/core/java/android/content/res/AssetManager.java
++++ b/core/java/android/content/res/AssetManager.java
+@@ -867,8 +867,14 @@ public final class AssetManager implements AutoCloseable {
+ 
+     @Nullable
+     CharSequence getPooledStringForCookie(int cookie, int id) {
+-        // Cookies map to ApkAssets starting at 1.
+-        return getApkAssets()[cookie - 1].getStringFromPool(id);
++        ApkAssets[] apkAssets = getApkAssets();
++
++        if (cookie > 0 && cookie <= apkAssets.length) {
++            // map cookies starting at 1.
++            return apkAssets[cookie - 1].getStringFromPool(id);
++        }
++
++        return null;
+     }
+ 
+     /**
+-- 
+2.43.0
+

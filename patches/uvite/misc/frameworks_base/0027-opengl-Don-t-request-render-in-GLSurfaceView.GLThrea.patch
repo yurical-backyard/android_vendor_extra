@@ -1,0 +1,88 @@
+From bc2645b28d77afe753140672d0552f95acfb23df Mon Sep 17 00:00:00 2001
+From: Oleg Ladin <dualglad@gmail.com>
+Date: Sun, 23 Dec 2018 02:04:58 +0300
+Subject: [PATCH] opengl: Don't request render in GLSurfaceView.GLThread
+ ctr
+
+Requesting render in GLSurfaceView.GLThread constructor will likely
+result in extra redrawing the surface at its initialization. This is
+harmful and unexpected behavior, especially when using GLSurfaceView
+RENDERMODE_WHEN_DIRTY: for example, the initial "background" drawing on
+the surface will occur several times, while it's supposed to be done
+only once at the startup.
+
+The following scenario occurs in the most cases (due to multi-thread
+nature sometimes this couldn't happen - see below):
+1. At the OpenGL application startup GLSurfaceView.setRenderer(Renderer)
+will call GLThread constructor, that sets up GLThread.mRequestRender to
+true value.
+
+2. After that GLThread.start() launches GLThread.run() that starts
+GLThread.guardedRun() method and enters synchronized(sGLThreadManager)
+block. Nevertheless, it can neither draw something nor reset
+mRequestRender (it's reseted after drawing only, if we're ready to
+draw, while we aren't).
+
+3. System creates surface to draw on, calling
+GLSurfaceView.surfaceCreated() first and GLSurfaceView.surfaceChanged()
+second. surfaceChanged() launches GLThread.onWindowResize() that waits
+for entering into synchronized(sGLThreadManager) block, where
+mRequestRenderer will be set up to true.
+
+4. When surface is created, the first thread in synchronized block will
+draw the surface (the first draw). It'll exit synchronized block,
+allowing the second thread to enter its block (from onWindowResize()),
+that will set up mRequesRender to true again and launch redrawing
+shortly.
+
+This problem would not occur in the following cases (workarounds):
+
+1. Due to abnormal latencies entering guardedRun() occurs after
+onWindowResize() done its work - the mRequestRenderer will be set up
+two times in a row - no redrawing occurs.
+
+2. A task is added using GLSurfaceView.queueEvent(Runnable). The task
+will be pushed into GLThread.mEventQueue, which is checked inside
+guardedRun() in synchronized block. Existing task makes guardedRun() to
+exit this block, that allows onWindowResize() enter it and set up
+mRequestRenderer (which is already/still true) - similar to the the 1st
+case above.
+
+Test: the problem can be reproduced using a simple application snippet:
+Using Activity.setContentView(new X(this)) for class X:
+ class X extends GLSurfaceView implements GLSurfaceView.Renderer {
+     X(Context c) {
+         super(c);
+         setEGLContextClientVersion(2);
+         setRenderer(this);
+         setRenderMode(RENDERMODE_WHEN_DIRTY);
+     }
+ }
+will result in the following callback calls:
+onSurfaceChanged()->onSurfaceCreated()->onDrawFrame()->onDrawFrame().
+Workaround methods described above could mitigate the issue, but not
+fully fix it.
+
+Change-Id: If04aa6dfe0940d5502145cae561747c6a935eea5
+Signed-off-by: dlwlrma123 <alexfinhart@gmail.com>
+---
+ opengl/java/android/opengl/GLSurfaceView.java | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/opengl/java/android/opengl/GLSurfaceView.java b/opengl/java/android/opengl/GLSurfaceView.java
+index 2baf7aff1f1d..21c52977132f 100644
+--- a/opengl/java/android/opengl/GLSurfaceView.java
++++ b/opengl/java/android/opengl/GLSurfaceView.java
+@@ -1255,7 +1255,8 @@ public class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback
+             super();
+             mWidth = 0;
+             mHeight = 0;
+-            mRequestRender = true;
++            // Render will be requested later when it'll be really needed
++            mRequestRender = false;
+             mRenderMode = RENDERMODE_CONTINUOUSLY;
+             mWantRenderNotification = false;
+             mGLSurfaceViewWeakRef = glSurfaceViewWeakRef;
+-- 
+2.43.0
+

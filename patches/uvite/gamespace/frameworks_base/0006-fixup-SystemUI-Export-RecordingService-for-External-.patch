@@ -1,0 +1,43 @@
+From 0ed274a0f3d88462254e621d80ed5be5d62d07ed Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Fri, 7 Apr 2023 20:09:24 +0530
+Subject: [PATCH] fixup! SystemUI: Export RecordingService for External
+ Usage
+
+* Required after QPR2.
+
+Fixes: https://github.com/crdroidandroid/android_frameworks_base/commit/a9d0ecd34240e3e6c45dbdf1fadb294b37982656
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ .../systemui/media/MediaProjectionPermissionActivity.java       | 2 +-
+ .../com/android/systemui/screenrecord/RecordingController.java  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/media/MediaProjectionPermissionActivity.java b/packages/SystemUI/src/com/android/systemui/media/MediaProjectionPermissionActivity.java
+index d403788f2c66..090adbfd11e9 100644
+--- a/packages/SystemUI/src/com/android/systemui/media/MediaProjectionPermissionActivity.java
++++ b/packages/SystemUI/src/com/android/systemui/media/MediaProjectionPermissionActivity.java
+@@ -368,6 +368,6 @@ public class MediaProjectionPermissionActivity extends Activity
+     }
+ 
+     private boolean isPartialScreenSharingEnabled() {
+-        return mFeatureFlags.isEnabled(Flags.WM_ENABLE_PARTIAL_SCREEN_SHARING);
++        return mFeatureFlags != null && mFeatureFlags.isEnabled(Flags.WM_ENABLE_PARTIAL_SCREEN_SHARING);
+     }
+ }
+diff --git a/packages/SystemUI/src/com/android/systemui/screenrecord/RecordingController.java b/packages/SystemUI/src/com/android/systemui/screenrecord/RecordingController.java
+index acb6d969e9d2..ae2923364390 100644
+--- a/packages/SystemUI/src/com/android/systemui/screenrecord/RecordingController.java
++++ b/packages/SystemUI/src/com/android/systemui/screenrecord/RecordingController.java
+@@ -149,7 +149,7 @@ public class RecordingController
+             return new ScreenCaptureDisabledDialog(mContext);
+         }
+ 
+-        return flags.isEnabled(Flags.WM_ENABLE_PARTIAL_SCREEN_SHARING)
++        return flags != null && flags.isEnabled(Flags.WM_ENABLE_PARTIAL_SCREEN_SHARING)
+                 ? new ScreenRecordPermissionDialog(context,  getHostUserHandle(), this,
+                     activityStarter, dialogLaunchAnimator, mUserContextProvider,
+                     onStartRecordingClicked)
+-- 
+2.43.0
+

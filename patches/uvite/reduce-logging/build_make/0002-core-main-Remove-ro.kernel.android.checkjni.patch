@@ -1,0 +1,32 @@
+From b506181dda18323e8a9db6d13f10bea945568484 Mon Sep 17 00:00:00 2001
+From: Chet Kener <Cl3Kener@gmail.com>
+Date: Fri, 23 Jan 2015 11:16:04 -0500
+Subject: [PATCH] core: main: Remove ro.kernel.android.checkjni
+
+* JNI, the Java Native Interface, provides a way for code written in the
+Java programming language interact with native (C/C++) code. The
+extended JNI checks will cause the system to run more slowly, but they
+can spot a variety of nasty bugs before they have a chance to cause
+problems.
+
+Change-Id: I7a9c8d4b5c21980950afe171c6eea363d4fa891a
+---
+ core/main.mk | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/core/main.mk b/core/main.mk
+index fe537cf788..942853e36c 100644
+--- a/core/main.mk
++++ b/core/main.mk
+@@ -389,8 +389,6 @@ ifneq (,$(user_variant))
+   ADDITIONAL_SYSTEM_PROPERTIES += ro.allow.mock.location=0
+ 
+ else # !user_variant
+-  # Turn on checkjni for non-user builds.
+-  ADDITIONAL_SYSTEM_PROPERTIES += ro.kernel.android.checkjni=1
+   # Set device insecure for non-user builds.
+   ADDITIONAL_SYSTEM_PROPERTIES += ro.secure=0
+   # Allow mock locations by default for non user builds
+-- 
+2.43.0
+

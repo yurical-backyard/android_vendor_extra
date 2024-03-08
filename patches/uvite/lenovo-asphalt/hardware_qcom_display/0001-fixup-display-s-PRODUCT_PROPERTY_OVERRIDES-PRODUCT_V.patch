@@ -1,0 +1,33 @@
+From d61a86468c3d7fbaf3ef7b03acaa8206d20d6779 Mon Sep 17 00:00:00 2001
+From: Arian <arian.kulmer@web.de>
+Date: Wed, 28 Feb 2024 12:06:05 +0100
+Subject: [PATCH] fixup! display:
+ s/PRODUCT_PROPERTY_OVERRIDES/PRODUCT_VENDOR_PROPERTIES/g
+
+Change-Id: I1d06d8d850256999fc12b46f6bf8979fce479e25
+---
+ config/display-product.mk | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/display-product.mk b/config/display-product.mk
+index d9a64cbac..86d684c38 100644
+--- a/config/display-product.mk
++++ b/config/display-product.mk
+@@ -142,12 +142,12 @@ ifneq ($(PLATFORM_VERSION), 10)
+ endif
+ 
+ ifeq ($(TARGET_BOARD_PLATFORM),parrot)
+-PRODUCT_PROPERTY_OVERRIDES += \
++PRODUCT_VENDOR_PROPERTIES += \
+     debug.sf.enable_hwc_vds=false \
+     vendor.display.vds_allow_hwc=true \
+     persist.sys.sf.color_mode=7
+ else
+-PRODUCT_PROPERTY_OVERRIDES += \
++PRODUCT_VENDOR_PROPERTIES += \
+     debug.sf.enable_hwc_vds=1 \
+     vendor.display.vds_allow_hwc=0 \
+     persist.sys.sf.color_mode=9
+-- 
+2.43.0
+

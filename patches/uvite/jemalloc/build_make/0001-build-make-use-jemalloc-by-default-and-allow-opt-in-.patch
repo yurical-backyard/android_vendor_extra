@@ -1,0 +1,91 @@
+From 2196bb30cd80b37a5c98f00d12808bc25bb8a31e Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Sun, 12 Jun 2022 02:30:21 +0900
+Subject: [PATCH] build: make: use jemalloc by default and allow opt-in to
+ scudo (1/4)
+
+Set "PRODUCT_USE_SCUDO := true" to device.mk to use scudo in case of a
+jemalloc compatibility issue.
+
+Also, clean up broken DisableScudo/PRODUCT_DISABLE_SCUDO.
+
+Detailed reason for switching to jemalloc by default is written in the
+bionic commit.
+
+Change-Id: I0983c48c1d11afb7820aad66c2838e5e3e13e6e8
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+---
+ core/config_sanitizers.mk            | 2 +-
+ core/product.mk                      | 4 ++--
+ core/soong_config.mk                 | 3 +--
+ target/product/go_defaults_common.mk | 5 -----
+ 4 files changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/core/config_sanitizers.mk b/core/config_sanitizers.mk
+index 7f8f3c2ca1..96657c3167 100644
+--- a/core/config_sanitizers.mk
++++ b/core/config_sanitizers.mk
+@@ -362,7 +362,7 @@ ifneq ($(filter address thread hwaddress,$(my_sanitize)),)
+ endif
+ 
+ # Or if disabled globally.
+-ifeq ($(PRODUCT_DISABLE_SCUDO),true)
++ifneq ($(PRODUCT_USE_SCUDO),true)
+   my_sanitize := $(filter-out scudo,$(my_sanitize))
+ endif
+ 
+diff --git a/core/product.mk b/core/product.mk
+index 35ace3cf52..c407d69fec 100644
+--- a/core/product.mk
++++ b/core/product.mk
+@@ -269,8 +269,8 @@ _product_list_vars += PRODUCT_MEMTAG_HEAP_EXCLUDE_PATHS
+ # Whether this product wants to start with an empty list of default memtag_heap include paths
+ _product_single_value_vars += PRODUCT_MEMTAG_HEAP_SKIP_DEFAULT_PATHS
+ 
+-# Whether the Scudo hardened allocator is disabled platform-wide
+-_product_single_value_vars += PRODUCT_DISABLE_SCUDO
++# Whether the Scudo hardened allocator is enabled platform-wide
++_product_single_value_vars += PRODUCT_USE_SCUDO
+ 
+ # List of extra VNDK versions to be included
+ _product_list_vars += PRODUCT_EXTRA_VNDK_VERSIONS
+diff --git a/core/soong_config.mk b/core/soong_config.mk
+index 3be75ac6fe..c49de5e29a 100644
+--- a/core/soong_config.mk
++++ b/core/soong_config.mk
+@@ -131,8 +131,6 @@ $(call add_json_list, MemtagHeapExcludePaths,            $(MEMTAG_HEAP_EXCLUDE_P
+ $(call add_json_list, MemtagHeapAsyncIncludePaths,       $(MEMTAG_HEAP_ASYNC_INCLUDE_PATHS) $(PRODUCT_MEMTAG_HEAP_ASYNC_INCLUDE_PATHS) $(if $(filter true,$(PRODUCT_MEMTAG_HEAP_SKIP_DEFAULT_PATHS)),,$(PRODUCT_MEMTAG_HEAP_ASYNC_DEFAULT_INCLUDE_PATHS)))
+ $(call add_json_list, MemtagHeapSyncIncludePaths,       $(MEMTAG_HEAP_SYNC_INCLUDE_PATHS) $(PRODUCT_MEMTAG_HEAP_SYNC_INCLUDE_PATHS) $(if $(filter true,$(PRODUCT_MEMTAG_HEAP_SKIP_DEFAULT_PATHS)),,$(PRODUCT_MEMTAG_HEAP_SYNC_DEFAULT_INCLUDE_PATHS)))
+ 
+-$(call add_json_bool, DisableScudo,                      $(filter true,$(PRODUCT_DISABLE_SCUDO)))
+-
+ $(call add_json_bool, ClangTidy,                         $(filter 1 true,$(WITH_TIDY)))
+ $(call add_json_str,  TidyChecks,                        $(WITH_TIDY_CHECKS))
+ 
+@@ -161,6 +159,7 @@ $(call add_json_list, DeviceSystemSdkVersions,           $(BOARD_SYSTEMSDK_VERSI
+ $(call add_json_str,  RecoverySnapshotVersion,           $(RECOVERY_SNAPSHOT_VERSION))
+ $(call add_json_str,  RamdiskSnapshotVersion,            $(RAMDISK_SNAPSHOT_VERSION))
+ $(call add_json_list, Platform_systemsdk_versions,       $(PLATFORM_SYSTEMSDK_VERSIONS))
++$(call add_json_bool, Malloc_use_scudo,                  $(filter true,$(PRODUCT_USE_SCUDO)))
+ $(call add_json_bool, Malloc_not_svelte,                 $(call invert_bool,$(filter true,$(MALLOC_SVELTE))))
+ $(call add_json_bool, Malloc_zero_contents,              $(call invert_bool,$(filter false,$(MALLOC_ZERO_CONTENTS))))
+ $(call add_json_bool, Malloc_pattern_fill_contents,      $(MALLOC_PATTERN_FILL_CONTENTS))
+diff --git a/target/product/go_defaults_common.mk b/target/product/go_defaults_common.mk
+index 51a1ef6ec4..6f5148c908 100644
+--- a/target/product/go_defaults_common.mk
++++ b/target/product/go_defaults_common.mk
+@@ -41,11 +41,6 @@ PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD := false
+ # leave less information available via JDWP.
+ PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
+ 
+-# Disable Scudo outside of eng builds to save RAM.
+-ifneq (,$(filter eng, $(TARGET_BUILD_VARIANT)))
+-  PRODUCT_DISABLE_SCUDO := true
+-endif
+-
+ # Add the system properties.
+ TARGET_SYSTEM_PROP += \
+     build/make/target/board/go_defaults_common.prop
+-- 
+2.43.0
+

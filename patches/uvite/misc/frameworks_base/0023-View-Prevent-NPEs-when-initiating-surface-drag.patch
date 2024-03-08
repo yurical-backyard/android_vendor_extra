@@ -1,0 +1,35 @@
+From cddcb5b554eca8d0b8b55a075a5729d32798dcb3 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 1 May 2023 10:54:47 +0800
+Subject: [PATCH] View: Prevent NPEs when initiating surface drag
+
+* mAttachInfo.mDragSurface and mAttachInfo.mSession can be null on specific scenarios, killing the session and destroying a surface with out NPE guards can cause system crashes
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/java/android/view/View.java | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/core/java/android/view/View.java b/core/java/android/view/View.java
+index bef2242f9028..6bbff7cb1d68 100644
+--- a/core/java/android/view/View.java
++++ b/core/java/android/view/View.java
+@@ -28140,10 +28140,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
+             Log.e(VIEW_LOG_TAG, "Unable to initiate drag", e);
+             return false;
+         } finally {
+-            if (token == null) {
++            if (session != null) {
++                session.kill();
++            }
++            if (token == null && surface != null) {
+                 surface.destroy();
+             }
+-            session.kill();
+         }
+     }
+ 
+-- 
+2.43.0
+

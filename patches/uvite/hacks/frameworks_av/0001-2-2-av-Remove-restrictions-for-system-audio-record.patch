@@ -1,0 +1,61 @@
+From 5f690ecdbfcaa0e1cfa09d9cd590528def3757b1 Mon Sep 17 00:00:00 2001
+From: jhenrique09 <jhenrique09.mcz@hotmail.com>
+Date: Tue, 24 Mar 2020 16:36:07 -0300
+Subject: [PATCH] [2/2] av: Remove restrictions for system audio record
+
+* Give freedom to screen recorder apps
+
+Change-Id: I726bde4f44bba6fc8cd771ae90c8864b26cdd919
+[yurical: Leave switch statement]
+Signed-off-by: Yurical <yurical1@outlook.com>
+---
+ media/libaaudio/src/utility/AAudioUtilities.cpp               | 4 +++-
+ .../common/managerdefinitions/src/AudioPolicyMix.cpp          | 2 ++
+ 2 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/media/libaaudio/src/utility/AAudioUtilities.cpp b/media/libaaudio/src/utility/AAudioUtilities.cpp
+index e8324a87f6..9c795de2b6 100644
+--- a/media/libaaudio/src/utility/AAudioUtilities.cpp
++++ b/media/libaaudio/src/utility/AAudioUtilities.cpp
+@@ -262,6 +262,7 @@ audio_flags_mask_t AAudio_computeAudioFlagsMask(
+         audio_output_flags_t outputFlags) {
+     audio_flags_mask_t flagsMask = AUDIO_FLAG_NONE;
+     switch (policy) {
++        /*
+         case AAUDIO_UNSPECIFIED:
+         case AAUDIO_ALLOW_CAPTURE_BY_ALL:
+             // flagsMask is not modified
+@@ -273,8 +274,9 @@ audio_flags_mask_t AAudio_computeAudioFlagsMask(
+             flagsMask = static_cast<audio_flags_mask_t>(flagsMask |
+                     AUDIO_FLAG_NO_MEDIA_PROJECTION | AUDIO_FLAG_NO_SYSTEM_CAPTURE);
+             break;
++        */
+         default:
+-            ALOGE("%s() 0x%08X unrecognized capture policy", __func__, policy);
++            break;
+             // flagsMask is not modified
+     }
+ 
+diff --git a/services/audiopolicy/common/managerdefinitions/src/AudioPolicyMix.cpp b/services/audiopolicy/common/managerdefinitions/src/AudioPolicyMix.cpp
+index 6b9757d476..30503ec272 100644
+--- a/services/audiopolicy/common/managerdefinitions/src/AudioPolicyMix.cpp
++++ b/services/audiopolicy/common/managerdefinitions/src/AudioPolicyMix.cpp
+@@ -347,6 +347,7 @@ bool AudioPolicyMixCollection::mixMatch(const AudioMix* mix, size_t mixIndex,
+     uid_t uid, audio_session_t session) {
+ 
+     if (mix->mMixType == MIX_TYPE_PLAYERS) {
++        /*
+         // Loopback render mixes are created from a public API and thus restricted
+         // to non sensible audio that have not opted out.
+         if (is_mix_loopback_render(mix->mRouteFlags)) {
+@@ -370,6 +371,7 @@ bool AudioPolicyMixCollection::mixMatch(const AudioMix* mix, size_t mixIndex,
+                 return false;
+             }
+         }
++        */
+ 
+         // Permit match only if requested format and mix format are PCM and can be format
+         // adapted by the mixer, or are the same (compressed) format.
+-- 
+2.43.0
+

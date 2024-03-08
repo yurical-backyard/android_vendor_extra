@@ -1,0 +1,58 @@
+From 14cf8ce16347f676139599cfeae5ed712c3cdc41 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Wed, 11 Jan 2023 08:29:25 +0800
+Subject: [PATCH] SettingsLib: Make IllustrationPreference bg protection
+ transparent
+
+* similar to lottie animations seen on OEMS like oplus and samsung
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+
+ Conflicts:
+	packages/SettingsLib/IllustrationPreference/res/values/colors.xml
+---
+ .../res/drawable/protection_background.xml                      | 2 +-
+ .../IllustrationPreference/res/values-night/colors.xml          | 2 +-
+ .../SettingsLib/IllustrationPreference/res/values/colors.xml    | 2 --
+ 3 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SettingsLib/IllustrationPreference/res/drawable/protection_background.xml b/packages/SettingsLib/IllustrationPreference/res/drawable/protection_background.xml
+index a027f287a0aa..2a1f38507bdf 100644
+--- a/packages/SettingsLib/IllustrationPreference/res/drawable/protection_background.xml
++++ b/packages/SettingsLib/IllustrationPreference/res/drawable/protection_background.xml
+@@ -18,7 +18,7 @@
+ <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+     <item>
+         <shape android:shape="rectangle">
+-            <solid android:color="@color/settingslib_protection_color"/>
++            <solid android:color="@android:color/transparent"/>
+             <corners android:radius="28dp"/>
+             <size android:width="@dimen/settingslib_illustration_width"
+                   android:height="@dimen/settingslib_illustration_height"/>
+diff --git a/packages/SettingsLib/IllustrationPreference/res/values-night/colors.xml b/packages/SettingsLib/IllustrationPreference/res/values-night/colors.xml
+index 71b18a8814bc..edf434f08dd8 100644
+--- a/packages/SettingsLib/IllustrationPreference/res/values-night/colors.xml
++++ b/packages/SettingsLib/IllustrationPreference/res/values-night/colors.xml
+@@ -16,5 +16,5 @@
+   -->
+ 
+ <resources>
+-    <color name="settingslib_protection_color">@android:color/black</color>
++
+ </resources>
+diff --git a/packages/SettingsLib/IllustrationPreference/res/values/colors.xml b/packages/SettingsLib/IllustrationPreference/res/values/colors.xml
+index accaa67db1fc..8a8c880773dd 100644
+--- a/packages/SettingsLib/IllustrationPreference/res/values/colors.xml
++++ b/packages/SettingsLib/IllustrationPreference/res/values/colors.xml
+@@ -16,8 +16,6 @@
+   -->
+ 
+ <resources>
+-    <color name="settingslib_protection_color">@android:color/white</color>
+-
+     <!-- Dynamic colors-->
+     <color name="settingslib_color_blue600">#1a73e8</color>
+     <color name="settingslib_color_blue400">#669df6</color>
+-- 
+2.43.0
+

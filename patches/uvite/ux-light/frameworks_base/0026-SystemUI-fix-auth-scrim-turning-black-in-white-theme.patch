@@ -1,0 +1,36 @@
+From c7a9b406ea308ed15a8be04fc6913a7284245644 Mon Sep 17 00:00:00 2001
+From: TimoDo <timo.capa@gmail.com>
+Date: Mon, 23 Oct 2023 01:28:10 +0200
+Subject: [PATCH] SystemUI: fix auth scrim turning black in white theme
+
+before:
+https://i.imgur.com/cA6rlEm.png
+https://i.imgur.com/UR8h7l1.png
+
+after:
+https://i.imgur.com/2fSfU2W.png
+https://i.imgur.com/k1SBPdX.png
+
+Change-Id: I6829f8179b1e28e58ec36c9225fb6a63b64c8c16
+---
+ .../src/com/android/systemui/statusbar/phone/ScrimState.java  | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
+index 45106f066acd..4240b779fa24 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
+@@ -95,8 +95,8 @@ public enum ScrimState {
+             mFrontTint = Color.BLACK;
+             mFrontAlpha = .66f;
+ 
+-            mBehindTint = Color.BLACK;
+-            mBehindAlpha = 1f;
++            mBehindTint = mClipQsScrim ? Color.BLACK : Color.WHITE;
++            mBehindAlpha = mClipQsScrim ? 1f : .85f;
+         }
+     },
+ 
+-- 
+2.43.0
+

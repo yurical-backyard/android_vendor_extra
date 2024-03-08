@@ -1,0 +1,35 @@
+From 54a1cb3db5e2c9ee5c9bbfb1ed9a4c752245d5b4 Mon Sep 17 00:00:00 2001
+From: jhonboy121 <alfredmathew05@gmail.com>
+Date: Sat, 9 Apr 2022 10:01:10 +0530
+Subject: [PATCH] ShortcutPackage: do not spam logcat
+
+* Certain apps publish dynamic shortcuts without required flags, which is an unexpected behaviour.
+  Since I got quite annoyed with the excessive logspam (since this is in a loop and there are multiple
+  shortcuts like this), instead of logging a full stack trace, just log a warning and be done with it.
+* Google should fixup / validate the flags before adding dynamic shortcuts (smh)
+
+Signed-off-by: jhonboy121 <alfredmathew05@gmail.com>
+---
+ .../core/java/com/android/server/pm/ShortcutPackage.java     | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/pm/ShortcutPackage.java b/services/core/java/com/android/server/pm/ShortcutPackage.java
+index 8456927b2cdf..753305207789 100644
+--- a/services/core/java/com/android/server/pm/ShortcutPackage.java
++++ b/services/core/java/com/android/server/pm/ShortcutPackage.java
+@@ -1648,9 +1648,10 @@ class ShortcutPackage extends ShortcutPackageItem {
+                     // Don't adjust ranks for manifest shortcuts.
+                     continue;
+                 }
+-                // At this point, it must be dynamic.
++                // At this point, it must be dynamic. But certain apps publish shortcut info
++                // that doesn't satisfy this, so just log a warning instead of full stack trace.
+                 if (!si.isDynamic()) {
+-                    s.wtf("Non-dynamic shortcut found. " + si.toInsecureString());
++                    Slog.w(TAG, "Non-dynamic shortcut found. " + si.toInsecureString());
+                     continue;
+                 }
+                 final int thisRank = rank++;
+-- 
+2.43.0
+

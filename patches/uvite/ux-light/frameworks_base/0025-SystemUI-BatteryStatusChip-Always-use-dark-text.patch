@@ -1,0 +1,37 @@
+From 8b0c07fdacd2314c7f8ee73a4dbbc9f9370856e5 Mon Sep 17 00:00:00 2001
+From: Kazuki Hashimoto <kazukih0205@gmail.com>
+Date: Mon, 24 Jul 2023 00:43:20 +0900
+Subject: [PATCH] SystemUI: BatteryStatusChip: Always use dark text
+
+We need this when we add back light QS.
+
+Before:
+https://imgur.com/a/8mvqpiY
+After:
+https://imgur.com/a/ki5aScU
+
+Change-Id: I393d8d39cfbd3d189997d62a7e2d6db3f91a1c2f
+---
+ .../src/com/android/systemui/statusbar/BatteryStatusChip.kt  | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/BatteryStatusChip.kt b/packages/SystemUI/src/com/android/systemui/statusbar/BatteryStatusChip.kt
+index 520976746785..d15d3ec37f86 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/BatteryStatusChip.kt
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/BatteryStatusChip.kt
+@@ -63,10 +63,9 @@ class BatteryStatusChip @JvmOverloads constructor(context: Context, attrs: Attri
+ 
+     @SuppressLint("UseCompatLoadingForDrawables")
+     private fun updateResources() {
+-        val primaryColor =
+-            Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.colorPrimary)
++        val primaryColor = context.resources.getColor(android.R.color.system_neutral1_900)
+         val textColorSecondary =
+-            Utils.getColorAttrDefaultColor(mContext, android.R.attr.textColorSecondary)
++            Utils.getColorAttrDefaultColor(mContext, android.R.attr.textColorSecondaryInverse)
+         batteryMeterView.updateColors(primaryColor, textColorSecondary, primaryColor)
+         roundedContainer.background = mContext.getDrawable(R.drawable.statusbar_chip_bg)
+     }
+-- 
+2.43.0
+

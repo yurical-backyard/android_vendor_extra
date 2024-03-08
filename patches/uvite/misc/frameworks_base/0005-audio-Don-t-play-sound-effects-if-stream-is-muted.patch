@@ -1,0 +1,35 @@
+From 599dcebf2c723bc828b63c99b0fbec8d45262b4e Mon Sep 17 00:00:00 2001
+From: Steve Kondik <steve@cyngn.com>
+Date: Sun, 3 Apr 2016 12:58:09 -0700
+Subject: [PATCH] audio: Don't play sound effects if stream is muted
+
+ * Stop turning on the audio hardware and playing silence.
+ * Kind of annoying with certain types of Bluetooth headphones
+   that don't actually play silence very well (hissssssssss).
+   Not to mention power usage.
+
+Change-Id: I6985db8710f8b0f61619ac57e8efb9e4e01cc31a
+---
+ .../core/java/com/android/server/audio/AudioService.java    | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/audio/AudioService.java b/services/core/java/com/android/server/audio/AudioService.java
+index 3d5205cf134e..420cca929fac 100644
+--- a/services/core/java/com/android/server/audio/AudioService.java
++++ b/services/core/java/com/android/server/audio/AudioService.java
+@@ -9337,7 +9337,11 @@ public class AudioService extends IAudioService.Stub
+                     break;
+ 
+                 case MSG_PLAY_SOUND_EFFECT:
+-                    mSfxHelper.playSoundEffect(msg.arg1, msg.arg2);
++                    if (isStreamMute(AudioSystem.STREAM_SYSTEM)) {
++                        Log.d(TAG, "Stream muted, skip playback");
++                    } else {
++                        mSfxHelper.playSoundEffect(msg.arg1, msg.arg2);
++                    }
+                     break;
+ 
+                 case MSG_SET_FORCE_USE:
+-- 
+2.43.0
+

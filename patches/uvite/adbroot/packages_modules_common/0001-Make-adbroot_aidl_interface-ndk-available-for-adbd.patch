@@ -1,0 +1,25 @@
+From 7785c83666839f9366a30e17a098e27fc6e54c14 Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Tue, 21 Dec 2021 21:29:16 +0100
+Subject: [PATCH] Make adbroot_aidl_interface-ndk available for adbd
+
+Change-Id: Idd38dee7dbe3ba0401adf0e5d5c1961864a1c6af
+---
+ build/allowed_deps.txt | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/build/allowed_deps.txt b/build/allowed_deps.txt
+index 0873740..3d66e80 100644
+--- a/build/allowed_deps.txt
++++ b/build/allowed_deps.txt
+@@ -13,6 +13,7 @@
+ # See go/apex-allowed-deps-error for more details.
+ # TODO(b/157465465): introduce automated quality signals and remove this list.
+ 
++adbroot_aidl_interface-ndk(minSdkVersion:30)
+ android.hardware.audio.common-V1-ndk(minSdkVersion:31)
+ android.hardware.audio.common-V2-ndk(minSdkVersion:31)
+ android.hardware.audio.common@5.0(minSdkVersion:30)
+-- 
+2.43.0
+

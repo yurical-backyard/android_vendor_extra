@@ -1,0 +1,90 @@
+From de6cbe7dca5bb47352c27351a73bee97dfd9519d Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Thu, 6 Apr 2023 08:42:46 +0800
+Subject: [PATCH] SystemUI: Prevent OOB when reinflating QS panel with
+ notifications
+
+--------- beginning of crash
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: FATAL EXCEPTION: main
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: Process: com.android.systemui, PID: 1747
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: android.view.InflateException: Binary XML file line #63 in com.android.systemui:layout/feedback_info: Binary XML file line #63 in com.android.systemui:layout/feedback_info: Error inflating class <unknown>
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: Caused by: android.view.InflateException: Binary XML file line #63 in com.android.systemui:layout/feedback_info: Error inflating class <unknown>
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: Caused by: java.lang.reflect.InvocationTargetException
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at java.lang.reflect.Constructor.newInstance0(Native Method)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at java.lang.reflect.Constructor.newInstance(Constructor.java:343)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.createView(LayoutInflater.java:858)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.createView(LayoutInflater.java:780)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.internal.policy.PhoneLayoutInflater.onCreateView(PhoneLayoutInflater.java:58)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.onCreateView(LayoutInflater.java:934)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.onCreateView(LayoutInflater.java:954)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:1008)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.createViewFromTag(LayoutInflater.java:965)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflate(LayoutInflater.java:1127)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflateChildren(LayoutInflater.java:1088)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflate(LayoutInflater.java:1130)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflateChildren(LayoutInflater.java:1088)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflate(LayoutInflater.java:1130)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflateChildren(LayoutInflater.java:1088)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflate(LayoutInflater.java:1130)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.rInflateChildren(LayoutInflater.java:1088)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.inflate(LayoutInflater.java:686)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.view.LayoutInflater.inflate(LayoutInflater.java:538)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.row.NotificationMenuRow.createMenuViews(NotificationMenuRow.java:74)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.row.NotificationMenuRow.createMenu(NotificationMenuRow.java:5)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.reInflateViews(ExpandableNotificationRow.java:163)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.onDensityOrFontScaleChanged(ExpandableNotificationRow.java:11)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.collection.coordinator.ViewConfigCoordinator.updateNotificationsOnDensityOrFontScaleChanged(ViewConfigCoordinator.kt:28)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.collection.coordinator.ViewConfigCoordinator.onDensityOrFontScaleChanged(ViewConfigCoordinator.kt:50)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.notification.collection.coordinator.ViewConfigCoordinator.onThemeChanged(ViewConfigCoordinator.kt:0)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.statusbar.phone.ConfigurationControllerImpl.onConfigurationChanged(ConfigurationControllerImpl.kt:361)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at com.android.systemui.SystemUIApplication.onConfigurationChanged(SystemUIApplication.java:46)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ConfigurationController.performConfigurationChanged(ConfigurationController.java:246)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ConfigurationController.handleConfigurationChanged(ConfigurationController.java:220)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ConfigurationController.handleConfigurationChanged(ConfigurationController.java:131)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ActivityThread.handleConfigurationChanged(ActivityThread.java:5998)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.servertransaction.ConfigurationChangeItem.execute(ConfigurationChangeItem.java:43)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeCallbacks(TransactionExecutor.java:138)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:95)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2308)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:201)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:288)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:7943)
+04-06 05:25:02.537  1747  1747 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:848)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: Caused by: java.lang.IndexOutOfBoundsException
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.StringBlock.nativeGetString(Native Method)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.StringBlock.getSequence(StringBlock.java:124)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.ApkAssets.getStringFromPool(ApkAssets.java:351)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.AssetManager.getPooledStringForCookie(AssetManager.java:869)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.TypedArray.loadStringValueAt(TypedArray.java:1400)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.TypedArray.getValueAt(TypedArray.java:1385)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.content.res.TypedArray.getFont(TypedArray.java:1042)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.widget.TextView.readTextAppearance(TextView.java:4155)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.widget.TextView.<init>(TextView.java:1129)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.widget.TextView.<init>(TextView.java:1067)
+04-06 05:25:02.538  1747  1747 E AndroidRuntime: 	at android.widget.TextView.<init>(TextView.java:1063)
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../statusbar/notification/row/NotificationMenuRow.java        | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/notification/row/NotificationMenuRow.java b/packages/SystemUI/src/com/android/systemui/statusbar/notification/row/NotificationMenuRow.java
+index 5a129fccff06..dae3787a964e 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/notification/row/NotificationMenuRow.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/notification/row/NotificationMenuRow.java
+@@ -302,6 +302,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
+             return;
+         }
+         List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
++        if (menuItems.isEmpty()) {
++           return;
++        }
+         for (int i = 0; i < menuItems.size(); i++) {
+             addMenuView(menuItems.get(i), mMenuContainer);
+         }
+-- 
+2.43.0
+

@@ -1,0 +1,73 @@
+From c4fbe9c1fd9dd833a20ab626a00b1518f68f605a Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sat, 9 Mar 2024 10:39:50 +0900
+Subject: [PATCH] vendor: Inherit vendor/extra if exists
+
+Squashed commit of the following:
+
+    Author: Koushik Dutta <koushd@gmail.com>
+    Date:   Mon Aug 12 15:41:14 2013 -0700
+
+        add a hook to add extra packages
+
+        Change-Id: I1f955a59a18bda22c4431d05a426aab91764d20d
+
+    Author: Steve Kondik <shade@chemlab.org>
+    Date:   Wed Sep 10 15:41:43 2014 -0700
+
+        cm: Update use of vendor/extra `
+
+        * Use inherit-product to pick up extra configuration
+
+        Change-Id: Icb0c8b09cd10b503e2dca09b7a972a613c354e7d
+
+    Author: Chris Sarbora <sarbs@cyngn.com>
+    Date:   Wed Dec 17 14:41:28 2014 -0800
+
+        Allow vendor/cyngn overlays to override vendor/cm overlays
+
+        Change-Id: I4806f6ec8cd5b8171cbc4dac3cc1b93dbe941e92
+        (cherry picked from commit 5c5a2e8f08f92b2d75a50c4cfc2707ac076f357f)
+
+    Author: Ethan Chen <intervigil@gmail.com>
+    Date:   Tue Aug 21 21:16:17 2018 -0700
+
+        config: Use standard inherit-product-if-exists for vendor/extra
+
+        * prepend-product-if-exists was developed specifically to handle some
+        special cases where Cyanogen Inc configuration ordering needed to be
+        handled ahead of the standard inclusion order.
+
+        Change-Id: Ia3e041fb9e3c84d0763d18e4a401121bc210b976
+
+    Author: Christopher N. Hesse <raymanfx@gmail.com>
+    Date:   Fri Sep 21 23:00:26 2018 +0200
+
+        common: Allow custom vendor to override properties
+
+        Test case: override ro.adb.secure in vendor/extra/product.mk
+        Before this patch, the override would not affect the resulting
+        property.
+
+        Change-Id: I0deb8a6865030b09ed6ba0ede1658319ca033e67
+---
+ target/product/aospa-target.mk | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/target/product/aospa-target.mk b/target/product/aospa-target.mk
+index 98f8452c..56b8e658 100644
+--- a/target/product/aospa-target.mk
++++ b/target/product/aospa-target.mk
+@@ -12,6 +12,9 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
++# Allow vendor/extra to override any property by setting it first
++$(call inherit-product-if-exists, vendor/extra/product.mk)
++
+ # Enable support for APEX updates
+ $(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
+ 
+-- 
+2.44.0
+

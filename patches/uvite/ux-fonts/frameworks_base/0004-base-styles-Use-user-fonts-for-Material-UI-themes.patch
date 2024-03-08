@@ -1,0 +1,85 @@
+From b1a1decc509eac3cb9886400bcce62dcb9639869 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Sat, 10 Sep 2022 22:20:19 +0300
+Subject: [PATCH] base: styles: Use user fonts for Material UI themes
+
+Only using user-selected fonts for a subset of system apps leads to an
+inconsistent visual experience, so apply them to the system's Material
+UI themes for consistency.
+
+[ghostrider-reborn: revise for android 12]
+[neobuddy89: updated for android 14]
+
+Change-Id: Ib0be558530ae101fae2a5c9e05610659a87cbae9
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ core/res/res/values-watch/styles_device_default.xml         | 2 +-
+ core/res/res/values/styles.xml                              | 4 ++--
+ libs/WindowManager/Shell/res/layout/one_handed_tutorial.xml | 2 +-
+ packages/SettingsLib/LayoutPreference/res/values/styles.xml | 2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/core/res/res/values-watch/styles_device_default.xml b/core/res/res/values-watch/styles_device_default.xml
+index e2261af28e30..ba4446541f6d 100644
+--- a/core/res/res/values-watch/styles_device_default.xml
++++ b/core/res/res/values-watch/styles_device_default.xml
+@@ -32,6 +32,6 @@
+     </style>
+     <style name="TextAppearance.DeviceDefault.Subhead" parent="TextAppearance.Material.Subhead">
+         <item name="android:textSize">16sp</item>
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_bodyFontFamily</item>
+     </style>
+ </resources>
+diff --git a/core/res/res/values/styles.xml b/core/res/res/values/styles.xml
+index dece65373a04..a2b2e940c9b1 100644
+--- a/core/res/res/values/styles.xml
++++ b/core/res/res/values/styles.xml
+@@ -1497,7 +1497,7 @@ please see styles_device_defaults.xml.
+     <!-- @hide The style for Autofill half screen dialog button -->
+     <style name="AutofillHalfSheetButton" parent="Widget.Material.Button">
+         <item name="textSize">14sp</item>
+-        <item name="fontFamily">google-sans-text-medium</item>
++        <item name="fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="textStyle">normal</item>
+         <item name="textAllCaps">false</item>
+         <item name="paddingStart">24dp</item>
+@@ -1524,7 +1524,7 @@ please see styles_device_defaults.xml.
+     <!-- @hide Autofill save dialog title -->
+     <style name="AutofillSaveUiTitle" parent="TextAppearance.DeviceDefault.Subhead">
+         <item name="textColor">?attr/textColorPrimary</item>
+-        <item name="fontFamily">google-sans</item>
++        <item name="fontFamily">@*android:string/config_bodyFontFamily</item>
+         <item name="textSize">24sp</item>
+     </style>
+ 
+diff --git a/libs/WindowManager/Shell/res/layout/one_handed_tutorial.xml b/libs/WindowManager/Shell/res/layout/one_handed_tutorial.xml
+index d29ed8b5a9ec..1be399a1aedd 100644
+--- a/libs/WindowManager/Shell/res/layout/one_handed_tutorial.xml
++++ b/libs/WindowManager/Shell/res/layout/one_handed_tutorial.xml
+@@ -42,7 +42,7 @@
+         android:layout_marginBottom="0dp"
+         android:gravity="center_horizontal"
+         android:textAlignment="center"
+-        android:fontFamily="google-sans-medium"
++        android:fontFamily="@*android:string/config_bodyFontFamily"
+         android:text="@string/one_handed_tutorial_title"
+         android:textSize="16sp"
+         android:textColor="@android:color/white"/>
+diff --git a/packages/SettingsLib/LayoutPreference/res/values/styles.xml b/packages/SettingsLib/LayoutPreference/res/values/styles.xml
+index f958037cfca6..27c4f138d769 100644
+--- a/packages/SettingsLib/LayoutPreference/res/values/styles.xml
++++ b/packages/SettingsLib/LayoutPreference/res/values/styles.xml
+@@ -49,7 +49,7 @@
+         <item name="android:layout_gravity">center</item>
+         <item name="android:textSize">18sp</item>
+         <item name="android:textColor">?android:attr/textColorPrimary</item>
+-        <item name="android:fontFamily">google-sans-medium</item>
++        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+         <item name="android:layout_marginTop">8dp</item>
+     </style>
+ </resources>
+\ No newline at end of file
+-- 
+2.43.0
+

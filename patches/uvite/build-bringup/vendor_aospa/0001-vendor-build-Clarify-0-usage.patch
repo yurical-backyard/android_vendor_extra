@@ -1,0 +1,33 @@
+From 1b17f758e372a945f9db6fd0dc9291247ab617af Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Wed, 6 Mar 2024 21:54:44 +0900
+Subject: [PATCH] vendor: build: Clarify $0 usage
+
+---
+ build.sh | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/build.sh b/build.sh
+index db506a8..2b2cbb3 100755
+--- a/build.sh
++++ b/build.sh
+@@ -52,7 +52,7 @@ function showHelpAndExit {
+ # Setup getopt.
+ long_opts="help,clean,installclean,repo-sync,variant:,build-type:,jobs:,module:,sign-keys:,pwfile:,backup-unsigned,delta:,imgzip,version:"
+ getopt_cmd=$(getopt -o hcirv:t:j:m:s:p:bd:zn: --long "$long_opts" \
+-            -n $(basename $0) -- "$@") || \
++            -n $(basename -- $0) -- "$@") || \
+             { echo -e "${CLR_BLD_RED}\nError: Getopt failed. Extra args\n${CLR_RST}"; showHelpAndExit; exit 1;}
+ 
+ eval set -- "$getopt_cmd"
+@@ -94,7 +94,6 @@ if [ "$ARCH" != "64" ]; then
+ fi
+ 
+ # Set up paths
+-cd $(dirname $0)
+ DIR_ROOT=$(pwd)
+ 
+ # Make sure everything looks sane so far
+-- 
+2.43.0
+

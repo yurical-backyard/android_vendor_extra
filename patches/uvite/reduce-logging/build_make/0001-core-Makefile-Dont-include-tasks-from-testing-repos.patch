@@ -1,0 +1,27 @@
+From 3de832b5a1ad5d07da5974f2bb3155e8aaaf1234 Mon Sep 17 00:00:00 2001
+From: maxwen <max.weninger@gmail.com>
+Date: Tue, 1 Dec 2020 21:16:51 +0100
+Subject: [PATCH] core: Makefile: Dont include tasks from testing repos
+
+Change-Id: I36fe03fb9e26622a4b47ca011a25c02c6ab56c56
+---
+ core/Makefile | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/core/Makefile b/core/Makefile
+index ebe5d1c484..7af29003af 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -7158,9 +7158,6 @@ include $(sort $(wildcard $(BUILD_SYSTEM)/tasks/*.mk))
+ -include $(sort $(wildcard vendor/*/*/build/tasks/*.mk))
+ -include $(sort $(wildcard device/*/*/build/tasks/*.mk))
+ -include $(sort $(wildcard product/*/*/build/tasks/*.mk))
+-# Also add test specifc tasks
+-include $(sort $(wildcard platform_testing/build/tasks/*.mk))
+-include $(sort $(wildcard test/vts/tools/build/tasks/*.mk))
+ endif
+ 
+ include $(BUILD_SYSTEM)/product-graph.mk
+-- 
+2.43.0
+

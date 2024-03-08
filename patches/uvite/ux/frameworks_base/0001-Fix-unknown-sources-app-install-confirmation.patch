@@ -1,0 +1,61 @@
+From 6fad6c58de822e4a0a0f8b3375061d37a0bc5acd Mon Sep 17 00:00:00 2001
+From: Tommy Webb <tommy@calyxinstitute.org>
+Date: Fri, 23 Feb 2024 03:45:50 +0000
+Subject: [PATCH] Fix unknown sources app install confirmation
+
+Allow the package install confirmation dialog to appear properly after
+the user turns on unknown sources. Also fix an incorrect session ID
+of -1 being shown in related log warnings.
+
+"Finish PIA if UnknownSourcesListener would like to start a PIA again"
+is a change that caused this feature to fail for third-party app stores.
+This change resolves that issue.
+
+Issue: calyxos#2081
+Test: atest CtsPackageInstallTestCases
+Test: Manual: Install a third-party app store e.g. F-Droid. Try to
+install an app. Tap Settings on the prompt to configure unknown sources.
+Tap to turn on unknown sources. The install confirmation dialog appears.
+
+BUG: 326612529
+Change-Id: Idd6667cbd79945d849b74a62122162ae72d99210
+---
+ .../packageinstaller/PackageInstallerActivity.java        | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/packages/PackageInstaller/src/com/android/packageinstaller/PackageInstallerActivity.java b/packages/PackageInstaller/src/com/android/packageinstaller/PackageInstallerActivity.java
+index 1d7e507fa631..4191ec6619fd 100644
+--- a/packages/PackageInstaller/src/com/android/packageinstaller/PackageInstallerActivity.java
++++ b/packages/PackageInstaller/src/com/android/packageinstaller/PackageInstallerActivity.java
+@@ -368,7 +368,7 @@ public class PackageInstallerActivity extends AlertActivity {
+             final SessionInfo info = mInstaller.getSessionInfo(sessionId);
+             String resolvedPath = info != null ? info.getResolvedBaseApkPath() : null;
+             if (info == null || !info.isSealed() || resolvedPath == null) {
+-                Log.w(TAG, "Session " + mSessionId + " in funky state; ignoring");
++                Log.w(TAG, "Session " + sessionId + " in funky state; ignoring");
+                 finish();
+                 return;
+             }
+@@ -383,7 +383,7 @@ public class PackageInstallerActivity extends AlertActivity {
+                     -1 /* defaultValue */);
+             final SessionInfo info = mInstaller.getSessionInfo(sessionId);
+             if (info == null || !info.isPreApprovalRequested()) {
+-                Log.w(TAG, "Session " + mSessionId + " in funky state; ignoring");
++                Log.w(TAG, "Session " + sessionId + " in funky state; ignoring");
+                 finish();
+                 return;
+             }
+@@ -797,7 +797,9 @@ public class PackageInstallerActivity extends AlertActivity {
+                     // work for the multiple user case, i.e. the caller task user and started
+                     // Activity user are not the same. To avoid having multiple PIAs in the task,
+                     // finish the current PackageInstallerActivity
+-                    finish();
++                    // Because finish() is overridden to set the installation result, we must use
++                    // the original finish() method, or the confirmation dialog fails to appear.
++                    PackageInstallerActivity.super.finish();
+                 }
+             }, 500);
+ 
+-- 
+2.43.0
+

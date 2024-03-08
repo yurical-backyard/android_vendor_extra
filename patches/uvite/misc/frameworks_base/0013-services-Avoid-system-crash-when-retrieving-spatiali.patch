@@ -1,0 +1,62 @@
+From 7284b6e649d33934196f4c5b8c5859aac8a36f74 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sat, 21 Oct 2023 16:46:12 +0800
+Subject: [PATCH] services: Avoid system crash when retrieving
+ spatializer tracking mode
+
+--------- beginning of crash
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: *** FATAL EXCEPTION IN SYSTEM PROCESS: AudioService
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke interface method 'byte android.media.ISpatializer.getActualHeadTrackingMode()' on a null object reference
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.SpatializerHelper.createSpat(SpatializerHelper.java:960)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.SpatializerHelper.setSpatializerEnabledInt(SpatializerHelper.java:794)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.SpatializerHelper.reset(SpatializerHelper.java:335)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.AudioService.onAudioServerDied(AudioService.java:1740)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.AudioService$AudioHandler.handleMessage(AudioService.java:9144)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:205)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:294)
+10-21 16:36:42.132  1673  2225 E AndroidRuntime: 	at com.android.server.audio.AudioService$AudioSystemThread.run(AudioService.java:8943)
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../server/audio/SpatializerHelper.java       | 23 ++++++++++++-------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
+
+diff --git a/services/core/java/com/android/server/audio/SpatializerHelper.java b/services/core/java/com/android/server/audio/SpatializerHelper.java
+index 35260ed6f148..8d5f1ebcb5d2 100644
+--- a/services/core/java/com/android/server/audio/SpatializerHelper.java
++++ b/services/core/java/com/android/server/audio/SpatializerHelper.java
+@@ -1015,15 +1015,22 @@ public class SpatializerHelper {
+         if (mSpat == null) {
+             mSpatCallback = new SpatializerCallback();
+             mSpat = AudioSystem.getSpatializer(mSpatCallback);
+-            try {
+-                //TODO: register heatracking callback only when sensors are registered
+-                if (mIsHeadTrackingSupported) {
+-                    mActualHeadTrackingMode =
+-                            headTrackingModeTypeToSpatializerInt(mSpat.getActualHeadTrackingMode());
+-                    mSpat.registerHeadTrackingCallback(mSpatHeadTrackingCallback);
++            if (mSpat != null) {
++                try {
++                    //TODO: register heatracking callback only when sensors are registered
++                    if (mIsHeadTrackingSupported) {
++                        mActualHeadTrackingMode =
++                                headTrackingModeTypeToSpatializerInt(mSpat.getActualHeadTrackingMode());
++                        mSpat.registerHeadTrackingCallback(mSpatHeadTrackingCallback);
++                    }
++                } catch (RemoteException e) {
++                    Log.e(TAG, "Can't configure head tracking", e);
++                    mState = STATE_NOT_SUPPORTED;
++                    mCapableSpatLevel = Spatializer.SPATIALIZER_IMMERSIVE_LEVEL_NONE;
++                    mActualHeadTrackingMode = Spatializer.HEAD_TRACKING_MODE_UNSUPPORTED;
+                 }
+-            } catch (RemoteException e) {
+-                Log.e(TAG, "Can't configure head tracking", e);
++            } else {
++                Log.d(TAG, "Spatializer is null or not supported");
+                 mState = STATE_NOT_SUPPORTED;
+                 mCapableSpatLevel = Spatializer.SPATIALIZER_IMMERSIVE_LEVEL_NONE;
+                 mActualHeadTrackingMode = Spatializer.HEAD_TRACKING_MODE_UNSUPPORTED;
+-- 
+2.43.0
+

@@ -1,0 +1,208 @@
+From 15ff6ad393dc0d4761e8bf9aab0815bfcde66c02 Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 21:03:02 +0800
+Subject: [PATCH] Revert "Dialog color tokens"
+
+This reverts commit fd5f585fe279ed79f0ff2cbec3a77ac169e34289.
+
+Change-Id: Ie362b5579cf0791fa59bb4a8c47d0dc57c60fca5
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../SystemUI/res/drawable/qs_dialog_btn_filled.xml    |  2 +-
+ .../res/drawable/qs_dialog_btn_filled_large.xml       |  2 +-
+ .../SystemUI/res/drawable/qs_dialog_btn_outline.xml   |  2 +-
+ .../res/layout/alert_dialog_title_systemui.xml        |  2 +-
+ packages/SystemUI/res/layout/screen_record_dialog.xml |  9 ++++-----
+ packages/SystemUI/res/layout/screen_share_dialog.xml  |  8 +++++---
+ packages/SystemUI/res/values/styles.xml               | 11 +++++------
+ 7 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
+index c4e45bf2c223..14cb1de9fa2d 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_filled.xml
+@@ -28,7 +28,7 @@
+         <item>
+             <shape android:shape="rectangle">
+                 <corners android:radius="?android:attr/buttonCornerRadius"/>
+-                <solid android:color="?androidprv:attr/materialColorPrimary"/>
++                <solid android:color="?androidprv:attr/colorAccentPrimary"/>
+                 <padding android:left="@dimen/dialog_button_horizontal_padding"
+                          android:top="@dimen/dialog_button_vertical_padding"
+                          android:right="@dimen/dialog_button_horizontal_padding"
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
+index 1590daa8b7f9..0544b871fa06 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_filled_large.xml
+@@ -26,7 +26,7 @@
+     <item>
+         <shape android:shape="rectangle">
+             <corners android:radius="18dp"/>
+-            <solid android:color="?androidprv:attr/materialColorPrimaryFixed"/>
++            <solid android:color="?androidprv:attr/colorAccentPrimary"/>
+         </shape>
+     </item>
+ </ripple>
+diff --git a/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml b/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
+index b0dc6523e971..a47299d6f854 100644
+--- a/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
++++ b/packages/SystemUI/res/drawable/qs_dialog_btn_outline.xml
+@@ -29,7 +29,7 @@
+             <shape android:shape="rectangle">
+                 <corners android:radius="?android:attr/buttonCornerRadius"/>
+                 <solid android:color="@android:color/transparent"/>
+-                <stroke android:color="?androidprv:attr/materialColorPrimary"
++                <stroke android:color="?androidprv:attr/colorAccentPrimaryVariant"
+                         android:width="1dp"
+                 />
+                 <padding android:left="@dimen/dialog_button_horizontal_padding"
+diff --git a/packages/SystemUI/res/layout/alert_dialog_title_systemui.xml b/packages/SystemUI/res/layout/alert_dialog_title_systemui.xml
+index ca7df86d8296..88f13b451bbe 100644
+--- a/packages/SystemUI/res/layout/alert_dialog_title_systemui.xml
++++ b/packages/SystemUI/res/layout/alert_dialog_title_systemui.xml
+@@ -42,7 +42,7 @@
+             android:layout_marginBottom="16dp"
+             android:scaleType="fitCenter"
+             android:src="@null"
+-            android:tint="?androidprv:attr/materialColorPrimary"
++            android:tint="?androidprv:attr/colorAccentPrimaryVariant"
+             />
+ 
+         <TextView
+diff --git a/packages/SystemUI/res/layout/screen_record_dialog.xml b/packages/SystemUI/res/layout/screen_record_dialog.xml
+index f6ce70d4d032..bbf3adfb8c67 100644
+--- a/packages/SystemUI/res/layout/screen_record_dialog.xml
++++ b/packages/SystemUI/res/layout/screen_record_dialog.xml
+@@ -15,7 +15,6 @@
+   limitations under the License.
+   -->
+ <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+     android:orientation="vertical">
+@@ -48,7 +47,7 @@
+                 <TextView
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+-                    android:textAppearance="@style/TextAppearance.Dialog.Title"
++                    android:textAppearance="?android:attr/textAppearanceLarge"
+                     android:fontFamily="@*android:string/config_headlineFontFamily"
+                     android:text="@string/screenrecord_permission_dialog_title"
+                     android:layout_marginTop="22dp"
+@@ -57,7 +56,8 @@
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="@string/screenrecord_permission_dialog_warning_entire_screen"
+-                    android:textAppearance="@style/TextAppearance.Dialog.Body.Message"
++                    android:textAppearance="?android:attr/textAppearanceSmall"
++                    android:textColor="?android:textColorSecondary"
+                     android:gravity="center"
+                     android:layout_marginBottom="20dp"/>
+ 
+@@ -81,7 +81,6 @@
+                         android:minHeight="48dp"
+                         android:layout_weight="1"
+                         android:popupBackground="@drawable/screenrecord_spinner_background"
+-                        android:textColor="?androidprv:attr/materialColorOnSurface"
+                         android:dropDownWidth="274dp"
+                         android:prompt="@string/screenrecord_audio_label"/>
+                     <Switch
+@@ -118,7 +117,7 @@
+                         android:text="@string/screenrecord_taps_label"
+                         android:textAppearance="?android:attr/textAppearanceMedium"
+                         android:fontFamily="@*android:string/config_headlineFontFamily"
+-                        android:textColor="?androidprv:attr/materialColorOnSurface"
++                        android:textColor="?android:attr/textColorPrimary"
+                         android:importantForAccessibility="no"/>
+                     <Switch
+                         android:layout_width="wrap_content"
+diff --git a/packages/SystemUI/res/layout/screen_share_dialog.xml b/packages/SystemUI/res/layout/screen_share_dialog.xml
+index 9af46c5b739c..ab522a388735 100644
+--- a/packages/SystemUI/res/layout/screen_share_dialog.xml
++++ b/packages/SystemUI/res/layout/screen_share_dialog.xml
+@@ -36,13 +36,14 @@
+             android:layout_width="@dimen/screenrecord_logo_size"
+             android:layout_height="@dimen/screenrecord_logo_size"
+             android:src="@drawable/ic_media_projection_permission"
+-            android:tint="?androidprv:attr/materialColorPrimary"
++            android:tint="?androidprv:attr/colorAccentPrimaryVariant"
+             android:importantForAccessibility="no"/>
+         <TextView
+             android:id="@+id/screen_share_dialog_title"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+-            android:textAppearance="@style/TextAppearance.Dialog.Title"
++            android:textAppearance="?android:attr/textAppearanceLarge"
++            android:fontFamily="@*android:string/config_headlineFontFamily"
+             android:layout_marginTop="@dimen/screenrecord_title_margin_top"
+             android:gravity="center"/>
+         <Spinner
+@@ -63,7 +64,8 @@
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:text="@string/screenrecord_permission_dialog_warning_entire_screen"
+-            style="@style/TextAppearance.Dialog.Body.Message"
++            android:textAppearance="?android:attr/textAppearanceSmall"
++            android:textColor="?android:textColorSecondary"
+             android:gravity="start"
+             android:lineHeight="@dimen/screenrecord_warning_line_height"/>
+ 
+diff --git a/packages/SystemUI/res/values/styles.xml b/packages/SystemUI/res/values/styles.xml
+index d3238178b81c..bc869492970c 100644
+--- a/packages/SystemUI/res/values/styles.xml
++++ b/packages/SystemUI/res/values/styles.xml
+@@ -415,7 +415,7 @@
+         <item name="android:buttonBarPositiveButtonStyle">@style/Widget.Dialog.Button</item>
+         <item name="android:buttonBarNegativeButtonStyle">@style/Widget.Dialog.Button.BorderButton</item>
+         <item name="android:buttonBarNeutralButtonStyle">@style/Widget.Dialog.Button.BorderButton</item>
+-        <item name="android:colorBackground">?androidprv:attr/materialColorSurfaceBright</item>
++        <item name="android:colorBackground">?androidprv:attr/colorSurface</item>
+         <item name="android:alertDialogStyle">@style/ScrollableAlertDialogStyle</item>
+         <item name="android:buttonBarStyle">@style/ButtonBarStyle</item>
+         <item name="android:buttonBarButtonStyle">@style/Widget.Dialog.Button.Large</item>
+@@ -1064,7 +1064,7 @@
+     </style>
+ 
+     <style name="TextAppearance.Dialog.Title" parent="@android:style/TextAppearance.DeviceDefault.Large">
+-        <item name="android:textColor">?androidprv:attr/materialColorOnSurface</item>
++        <item name="android:textColor">?android:attr/textColorPrimary</item>
+         <item name="android:textSize">@dimen/dialog_title_text_size</item>
+         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+         <item name="android:lineHeight">32sp</item>
+@@ -1073,7 +1073,7 @@
+     </style>
+ 
+     <style name="TextAppearance.Dialog.Body" parent="@android:style/TextAppearance.DeviceDefault.Medium">
+-        <item name="android:textColor">?androidprv:attr/materialColorOnSurfaceVariant</item>
++        <item name="android:textColor">?android:attr/textColorSecondary</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+         <item name="android:lineHeight">20sp</item>
+@@ -1101,7 +1101,7 @@
+     <style name="Widget.Dialog.Button">
+         <item name="android:buttonCornerRadius">28dp</item>
+         <item name="android:background">@drawable/qs_dialog_btn_filled</item>
+-        <item name="android:textColor">?androidprv:attr/materialColorOnPrimary</item>
++        <item name="android:textColor">?androidprv:attr/textColorOnAccent</item>
+         <item name="android:textSize">14sp</item>
+         <item name="android:lineHeight">20sp</item>
+         <item name="android:fontFamily">@*android:string/config_bodyFontFamilyMedium</item>
+@@ -1111,13 +1111,12 @@
+ 
+     <style name="Widget.Dialog.Button.BorderButton">
+         <item name="android:background">@drawable/qs_dialog_btn_outline</item>
+-        <item name="android:textColor">?androidprv:attr/materialColorOnSurface</item>
++        <item name="android:textColor">?android:attr/textColorPrimary</item>
+     </style>
+ 
+     <style name="Widget.Dialog.Button.Large">
+         <item name="android:background">@drawable/qs_dialog_btn_filled_large</item>
+         <item name="android:minHeight">56dp</item>
+-        <item name="android:textColor">?androidprv:attr/materialColorOnPrimaryFixed</item>
+     </style>
+ 
+     <style name="MainSwitch.Settingslib" parent="@android:style/Theme.DeviceDefault">
+-- 
+2.43.0
+

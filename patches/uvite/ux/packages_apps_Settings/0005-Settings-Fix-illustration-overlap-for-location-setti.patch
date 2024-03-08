@@ -1,0 +1,26 @@
+From 45aef63a49c61ac72d8650512b99a3fb5aedc214 Mon Sep 17 00:00:00 2001
+From: Pranav Vashi <neobuddy89@gmail.com>
+Date: Sun, 5 Nov 2023 13:33:18 +0530
+Subject: [PATCH] Settings: Fix illustration overlap for location settings
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+---
+ src/com/android/settings/location/LocationSettings.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/com/android/settings/location/LocationSettings.java b/src/com/android/settings/location/LocationSettings.java
+index aac19a7e64e..da131b13c55 100644
+--- a/src/com/android/settings/location/LocationSettings.java
++++ b/src/com/android/settings/location/LocationSettings.java
+@@ -65,7 +65,7 @@ public class LocationSettings extends DashboardFragment implements
+         LocationEnabler.LocationModeChangeListener {
+ 
+     private static final String TAG = "LocationSettings";
+-    private static final String RECENT_LOCATION_ACCESS_PREF_KEY = "recent_location_access";
++    private static final String RECENT_LOCATION_ACCESS_PREF_KEY = "loc_illustration";
+ 
+     private LocationSwitchBarController mSwitchBarController;
+     private LocationEnabler mLocationEnabler;
+-- 
+2.43.0
+

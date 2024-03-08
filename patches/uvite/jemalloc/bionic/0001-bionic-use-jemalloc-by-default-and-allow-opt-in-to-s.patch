@@ -1,0 +1,66 @@
+From 80090ea23c5cd9ec13734835e6fd7e35dd318bed Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Fri, 22 Mar 2024 11:38:02 +0900
+Subject: [PATCH] bionic: use jemalloc by default and allow opt-in to scudo
+ (3/4)
+
+Overall, jemalloc performs 23.4% better than Scudo while consuming
+1.7% less amount of memory in system/extra's real-world memory_replay
+traces:
+
+https://docs.google.com/spreadsheets/d/19wLanILSw_l2d7oot3VvcZiFSLzPRWNb_a5ZyA3aFSU/edit?usp=sharing
+
+Scudo performs fairly well for a hardened memory allocator, but we're
+optimizing for performance.
+
+Tests were performed by statically linking memory_replay under QSSI 14.
+Android userspace has been stopped before performing all benchmarks,
+and each test was executed 10 times with an idle detector in between to
+reduce noise and errors.
+
+The entire test took about 3 days:
+https://github.com/arter97/android_memory_replay_helper
+
+This commit has been inspired from https://github.com/ProtonAOSP/android_bionic/commit/b2204890eac02f54738a8d9e17c93643ff0aff60
+
+Change-Id: I5f6955bac87d87f9ef931c9be2fd43ac5d8fbcd7
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+---
+ libc/Android.bp | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/libc/Android.bp b/libc/Android.bp
+index c2d4f2f93..e851d01ab 100644
+--- a/libc/Android.bp
++++ b/libc/Android.bp
+@@ -125,7 +125,7 @@ cc_defaults {
+         malloc_pattern_fill_contents: {
+             cflags: ["-DSCUDO_PATTERN_FILL_CONTENTS"],
+         },
+-        malloc_not_svelte: {
++        malloc_use_scudo: {
+             cflags: ["-DUSE_SCUDO"],
+         },
+     },
+@@ -136,7 +136,7 @@ cc_defaults {
+ }
+ 
+ libc_scudo_product_variables = {
+-    malloc_not_svelte: {
++    malloc_use_scudo: {
+         cflags: ["-DUSE_SCUDO"],
+         whole_static_libs: ["libscudo"],
+         exclude_static_libs: [
+@@ -148,9 +148,6 @@ libc_scudo_product_variables = {
+ 
+ // Defaults for native allocator libs/includes to make it
+ // easier to change.
+-// To disable scudo for the non-svelte config remove the line:
+-//     product_variables: libc_scudo_product_variables,
+-// in the cc_defaults below.
+ // ========================================================
+ cc_defaults {
+     name: "libc_native_allocator_defaults",
+-- 
+2.43.0
+

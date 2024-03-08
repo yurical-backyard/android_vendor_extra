@@ -1,0 +1,98 @@
+From 2981e34b84803777b9c8320575ce767c1013bc2b Mon Sep 17 00:00:00 2001
+From: someone5678 <someone5678@users.noreply.github.com>
+Date: Wed, 11 Oct 2023 16:03:50 +0900
+Subject: [PATCH] av: Add legacy 32bit compat to
+ GraphicBufferSource::configure
+
+Log:
+--------- beginning of crash
+09-08 18:41:01.397  1119  1119 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 1119 (vendor.qti.medi), pid 1119 (vendor.qti.medi)
+09-08 18:41:01.502  1183  1183 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+09-08 18:41:01.502  1183  1183 F DEBUG   : Build fingerprint: 'Redmi/sweet_eea/sweet:13/RKQ1.210614.002/V14.0.5.0.TKFEUXM:user/release-keys'
+09-08 18:41:01.502  1183  1183 F DEBUG   : Revision: '0'
+09-08 18:41:01.502  1183  1183 F DEBUG   : ABI: 'arm64'
+09-08 18:41:01.502  1183  1183 F DEBUG   : Timestamp: 1972-09-08 22:41:01.460993955+0000
+09-08 18:41:01.502  1183  1183 F DEBUG   : Process uptime: 2s
+09-08 18:41:01.502  1183  1183 F DEBUG   : Cmdline: /vendor/bin/hw/vendor.qti.media.c2@1.0-service
+09-08 18:41:01.502  1183  1183 F DEBUG   : pid: 1119, tid: 1119, name: vendor.qti.medi  >>> /vendor/bin/hw/vendor.qti.media.c2@1.0-service <<<
+09-08 18:41:01.502  1183  1183 F DEBUG   : uid: 1046
+09-08 18:41:01.502  1183  1183 F DEBUG   : signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+09-08 18:41:01.502  1183  1183 F DEBUG   : Abort message: 'Could not read base policy file '/vendor/etc/seccomp_policy/codec2.vendor.base-arm64.policy''
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x0  0000000000000000  x1  000000000000045f  x2  0000000000000006  x3  0000007feb8eb770
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x4  1f646b68651f7862  x5  1f646b68651f7862  x6  1f646b68651f7862  x7  7f7f7f7f7f7f7f7f
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x8  00000000000000f0  x9  000000000000045f  x10 ffffff80ffffffdf  x11 fffffffffffffffd
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x12 0000007feb8eb6e0  x13 000000000000005d  x14 b400007b592708d0  x15 0000000000001556
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x16 0000007c44d34d30  x17 0000007c44d0ed80  x18 0000007c4c334000  x19 000000000000045f
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x20 000000000000045f  x21 00000000ffffffff  x22 0000007c4b94e000  x23 0000000000000000
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x24 0000007c4b94e000  x25 0000000000000000  x26 0000000000000000  x27 0000000000000000
+09-08 18:41:01.502  1183  1183 F DEBUG   :     x28 0000000000000000  x29 0000007feb8eb7f0
+09-08 18:41:01.502  1183  1183 F DEBUG   :     lr  0000007c44cb3af8  sp  0000007feb8eb750  pc  0000007c44cb3b28  pst 0000000000000000
+09-08 18:41:01.502  1183  1183 F DEBUG   : 7 total frames
+09-08 18:41:01.502  1183  1183 F DEBUG   : backtrace:
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #00 pc 000000000005cb28  /apex/com.android.runtime/lib64/bionic/libc.so (abort+168) (BuildId: c93d1a140ae4309e1fe245f371b65776)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #01 pc 000000000000650c  /system/lib64/liblog.so (__android_log_default_aborter+12) (BuildId: 4fedcd06dc017905f90f4867f88f7fb1)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #02 pc 00000000000b5560  /apex/com.android.vndk.v34/lib64/libbinder.so (android::base::LogMessage::~LogMessage()+352) (BuildId: ecaf8d435fefbfb6b8ead7955216105b)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #03 pc 0000000000002b38  /vendor/lib64/libavservices_minijail.so (android::SetUpMinijailList(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > > const&) (.cfi)+968) (BuildId: 8e383a241e9281b774145759dc5cf604)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #04 pc 0000000000002718  /vendor/lib64/libavservices_minijail.so (android::SetUpMinijail(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) (.cfi)+88) (BuildId: 8e383a241e9281b774145759dc5cf604)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #05 pc 0000000000002120  /vendor/bin/hw/vendor.qti.media.c2@1.0-service (main+204) (BuildId: 0657e5d9e535ccf550dc5e12ef6974a1)
+09-08 18:41:01.502  1183  1183 F DEBUG   :       #06 pc 0000000000054f08  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+104) (BuildId: c93d1a140ae4309e1fe245f371b65776)
+09-08 18:41:02.294  1399  1399 F linker  : CANNOT LINK EXECUTABLE "/vendor/bin/hw/android.hardware.media.omx@1.0-service": cannot locate symbol "_ZN7android19GraphicBufferSource9configureERKNS_2spINS_16ComponentWrapperEEEiijjj" referenced by "/vendor/lib/vndk/libstagefright_omx.so"...
+
+Change-Id: Iee237e289867cfec2863eafbbc5f76de09ccc61c
+---
+ media/module/bqhelper/GraphicBufferSource.cpp  | 18 ++++++++++++++++++
+ .../stagefright/bqhelper/GraphicBufferSource.h |  9 +++++++++
+ 2 files changed, 27 insertions(+)
+
+diff --git a/media/module/bqhelper/GraphicBufferSource.cpp b/media/module/bqhelper/GraphicBufferSource.cpp
+index b54f3cd..3d8777c 100644
+--- a/media/module/bqhelper/GraphicBufferSource.cpp
++++ b/media/module/bqhelper/GraphicBufferSource.cpp
+@@ -1220,6 +1220,24 @@ status_t GraphicBufferSource::configure(
+     return OK;
+ }
+ 
++// Legacy compat
++status_t GraphicBufferSource::configure(
++        const sp<ComponentWrapper>& component,
++        int32_t dataSpace,
++        int32_t bufferCount,
++        uint32_t frameWidth,
++        uint32_t frameHeight,
++        uint32_t consumerUsage) {
++    
++    return GraphicBufferSource::configure(
++        component,
++        dataSpace,
++        bufferCount,
++        frameWidth,
++        frameHeight,
++        (uint64_t) consumerUsage);
++}
++
+ status_t GraphicBufferSource::setSuspend(bool suspend, int64_t suspendStartTimeUs) {
+     ALOGV("setSuspend=%d at time %lld us", suspend, (long long)suspendStartTimeUs);
+ 
+diff --git a/media/module/bqhelper/include/media/stagefright/bqhelper/GraphicBufferSource.h b/media/module/bqhelper/include/media/stagefright/bqhelper/GraphicBufferSource.h
+index 4e4fbfd..de80de2 100644
+--- a/media/module/bqhelper/include/media/stagefright/bqhelper/GraphicBufferSource.h
++++ b/media/module/bqhelper/include/media/stagefright/bqhelper/GraphicBufferSource.h
+@@ -131,6 +131,15 @@ public:
+         uint32_t frameHeight,
+         uint64_t consumerUsage);
+ 
++    // Legacy compat
++    status_t configure(
++        const sp<ComponentWrapper> &component,
++        int32_t dataSpace,
++        int32_t bufferCount,
++        uint32_t frameWidth,
++        uint32_t frameHeight,
++        uint32_t consumerUsage);
++
+     // This is called after the last input frame has been submitted or buffer
+     // timestamp is greater or equal than stopTimeUs. We need to submit an empty
+     // buffer with the EOS flag set.  If we don't have a codec buffer ready,
+-- 
+2.43.0
+

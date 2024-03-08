@@ -1,0 +1,57 @@
+From a86794fa14053b98921a936e6c7272a491b1ab4c Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Fri, 20 Oct 2023 17:36:54 +0800
+Subject: [PATCH] safety center: Prevent crash due to unexpected safety
+ source
+
+* attempts to mititgate:
+
+10-20 16:49:26.776  1772  5086 W ActivityManager: Unbind failed: could not find connection for android.os.BinderProxy@6d3bc60
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: FATAL EXCEPTION: [com.google.android.gms.chimera.container.intentoperation.GmsIntentOperationChimeraService-Executor] idle
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: Process: com.google.android.gms, PID: 7332
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: java.lang.IllegalArgumentException: Unexpected safety source: GooglePasswordCheckup
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3061)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.os.Parcel.createException(Parcel.java:3041)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:3024)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.os.Parcel.readException(Parcel.java:2966)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.safetycenter.ISafetyCenterManager$Stub$Proxy.setSafetySourceData(ISafetyCenterManager.java:450)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.safetycenter.SafetyCenterManager.setSafetySourceData(SafetyCenterManager.java:375)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at akcf.a(:com.google.android.gms@233717044@23.37.17 (190400-570218080):167)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at com.google.android.gms.credential.manager.operations.ModuleInitializer.b(:com.google.android.gms@233717044@23.37.17 (190400-570218080):209)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at aevx.onHandleIntent(:com.google.android.gms@233717044@23.37.17 (190400-570218080):124)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@233717044@23.37.17 (190400-570218080):2)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at afaf.onHandleIntent(:com.google.android.gms@233717044@23.37.17 (190400-570218080):10)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at mki.run(:com.google.android.gms@233717044@23.37.17 (190400-570218080):70)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at mkh.run(:com.google.android.gms@233717044@23.37.17 (190400-570218080):152)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at dsgn.run(:com.google.android.gms@233717044@23.37.17 (190400-570218080):13)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:644)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at java.lang.Thread.run(Thread.java:1012)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: Caused by: android.os.RemoteException: Remote stack trace:
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at com.android.safetycenter.data.SafetySourceDataValidator.validateRequest(SafetySourceDataValidator.java:86)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at com.android.safetycenter.data.SafetyCenterDataManager.setSafetySourceData(SafetyCenterDataManager.java:136)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at com.android.safetycenter.SafetyCenterService$Stub.setSafetySourceData(SafetyCenterService.java:279)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.safetycenter.ISafetyCenterManager$Stub.onTransact(ISafetyCenterManager.java:259)
+10-20 16:49:26.800  7332  7509 E AndroidRuntime: 	at android.os.Binder.execTransactInternal(Binder.java:1339)
+
+Change-Id: I0d50f1562d5aeb5cefee794e72589776a404385a
+---
+ .../android/safetycenter/data/SafetySourceDataValidator.java    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java b/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
+index cc265d7..d1d53f0 100644
+--- a/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
++++ b/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
+@@ -82,7 +82,7 @@ final class SafetySourceDataValidator {
+             @UserIdInt int userId) {
+         SafetyCenterConfigReader.ExternalSafetySource externalSafetySource =
+                 mSafetyCenterConfigReader.getExternalSafetySource(safetySourceId, packageName);
+-        if (externalSafetySource == null) {
++        if (externalSafetySource == null && !safetySourceId.equals("GooglePasswordCheckup")) {
+             throw new IllegalArgumentException("Unexpected safety source: " + safetySourceId);
+         }
+ 
+-- 
+2.43.0
+

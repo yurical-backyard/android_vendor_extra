@@ -1,0 +1,530 @@
+From 9bd7390f79fce5a802a3960749ac5a9dd7e740ad Mon Sep 17 00:00:00 2001
+From: LuK1337 <priv.luk@gmail.com>
+Date: Wed, 16 Sep 2020 19:35:05 +0200
+Subject: [PATCH] Squashed import of adb root patches
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Sat Nov 2 22:46:12 2019 +0100
+    Add adb_root daemon
+    Change-Id: I516f1b85e28f5d061c8c54282a7657d53162bccb
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Sat Nov 2 23:54:43 2019 +0100
+    Add adb root hooks
+    Change-Id: I6b42ae84ab22ed4e86b92c3c1276a44a14d61781
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Fri Nov 8 11:36:04 2019 +0100
+    Make adb use a custom prop for adb root
+    Change-Id: Ie2b8c5e9d75371da43305f003607869370bbd1a4
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 17 23:21:36 2019 +0800
+    Create /data/adbroot on post-fs-data
+     * The real /data partition is not available before this stage.
+    Change-Id: I2cbcd788f35a2d51c823a71e2c944502812c1cfd
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sat Nov 23 20:55:42 2019 +0800
+    adbd: Initialize adbroot status to false
+    Change-Id: I6d5dc84974dff1a219702fb628e08517848977eb
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sat Nov 23 20:58:31 2019 +0800
+    adbd: Make adbroot interface a static lib
+    Change-Id: I40e46b8312ec77992fc1c11d2190b611bfd049cb
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 24 16:24:27 2019 +0800
+    adb_root: Enforce caller UID
+     * AID_SYSTEM - Settings app
+     * AID_SHELL - adbd
+     * Apply minor clean up while at it
+    Change-Id: I15a5d18204a96cc2f8352a6cc7f6f901193aa5b9
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 24 16:39:11 2019 +0800
+    adb_root: Add mutex to binder interface
+     * Binder IPC is not implemented in a thread-safe manner, add mutex to
+       avoid possible race.
+    Change-Id: I37cdca33d519b0fc960960272790d1f55874e2e2
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 24 17:01:49 2019 +0800
+    adb_root: Restart adbd when turning off root
+     * The running adbd session remains rooted after turning off from UI.
+    Change-Id: Iedd5282b4e3c11ef6c0959ae6867448521cb2c78
+
+Author: Alessandro Astone <ales.astone@gmail.com>
+Date:   Fri Mar 20 19:47:03 2020 +0100
+    adb: go back to standard adb root prop
+     * This reverts change Ie2b8c5e9d75371da43305f003607869370bbd1a4
+       plus more changes
+    Change-Id: Ia17239e3671d2c1a92664810ed53175110699473
+
+Author: Alessandro Astone <ales.astone@gmail.com>
+Date:   Thu Jan 6 22:07:54 2022 +0100
+    adb_root: Move to system_ext
+    Change-Id: If9840afe40d19b785080681dc92527330fca595a
+
+Author: LuK1337 <priv.luk@gmail.com>
+Date:   Thu Mar 24 09:05:17 2022 +0100
+    adb_root: Add isSupported() method to determine if we are debuggable
+    This allows us to show the preference in Settings even if
+    Build.IS_DEBUGGABLE is false.
+    Change-Id: If94294f980ccdc10f2473b6f1a858e36547fc258
+
+Author: nift4 <nift4@protonmail.com>
+Date:   Sun Apr 30 18:33:37 2023 +0200
+    adb_root: Simplify the way we parse enabled state file
+    On a failed conversion, instead of throwing a C++ exception (and we have
+    exceptions disabled, so we get abort()ed instead), we just say it's
+    disabled, which is better than crashing.
+    Change-Id: Ia3e5432b2591b98f8cb5911b39459260b9ac6ba6
+
+[LuK1337]: Rework for Android 11.
+
+Change-Id: Ie8db34705d36f3e9f2c53617ec59a26087cbcc87
+Signed-off-by: Francescodario Cuzzocrea <bosconovic@gmail.com>
+---
+ Android.bp                                |  76 ++++++++++++++-
+ aidl/android/adbroot/IADBRootService.aidl |  24 +++++
+ daemon/restart_service.cpp                |  28 ++++++
+ root/adb_root.rc                          |   7 ++
+ root/adbroot_service.cpp                  | 109 ++++++++++++++++++++++
+ root/adbroot_service.h                    |  48 ++++++++++
+ root/main.cpp                             |  31 ++++++
+ 7 files changed, 322 insertions(+), 1 deletion(-)
+ create mode 100644 aidl/android/adbroot/IADBRootService.aidl
+ create mode 100644 root/adb_root.rc
+ create mode 100644 root/adbroot_service.cpp
+ create mode 100644 root/adbroot_service.h
+ create mode 100644 root/main.cpp
+
+diff --git a/Android.bp b/Android.bp
+index 30130791..f97477fa 100644
+--- a/Android.bp
++++ b/Android.bp
+@@ -42,7 +42,6 @@ cc_defaults {
+         "-Wall",
+         "-Wextra",
+         "-Werror",
+-        "-Wexit-time-destructors",
+         "-Wno-non-virtual-dtor",
+         "-Wno-unused-parameter",
+         "-Wno-missing-field-initializers",
+@@ -625,18 +624,26 @@ cc_library {
+                 "daemon/restart_service.cpp",
+             ],
+             shared_libs: [
++                "libbinder_ndk",
+                 "libmdnssd",
+                 "libselinux",
+             ],
++            static_libs: [
++                "adbroot_aidl_interface-ndk",
++            ],
+         },
+         recovery: {
+             exclude_srcs: [
+                 "daemon/abb_service.cpp",
+             ],
+             exclude_shared_libs: [
++                "libbinder_ndk",
+                 "libadb_pairing_auth",
+                 "libadb_pairing_connection",
+             ],
++            exclude_static_libs: [
++                "adbroot_aidl_interface-ndk",
++            ],
+         },
+     },
+ 
+@@ -746,10 +753,25 @@ cc_binary {
+     ],
+ 
+     target: {
++        android: {
++            shared_libs: [
++                "libbinder_ndk",
++            ],
++
++            static_libs: [
++                "adbroot_aidl_interface-ndk",
++            ],
++        },
++
+         recovery: {
+             exclude_shared_libs: [
+                 "libadb_pairing_auth",
+                 "libadb_pairing_connection",
++                "libbinder_ndk",
++            ],
++
++            exclude_static_libs: [
++                "adbroot_aidl_interface-ndk",
+             ],
+         }
+     },
+@@ -782,6 +804,27 @@ phony {
+     ],
+ }
+ 
++cc_binary {
++    name: "adb_root",
++    srcs: [
++        "root/adbroot_service.cpp",
++        "root/main.cpp",
++    ],
++    init_rc: [
++        "root/adb_root.rc",
++    ],
++    shared_libs: [
++        "libbase",
++        "libbinder_ndk",
++        "liblog",
++        "libutils",
++    ],
++    static_libs: [
++        "adbroot_aidl_interface-ndk",
++    ],
++    system_ext_specific: true,
++}
++
+ cc_binary {
+     name: "abb",
+ 
+@@ -997,3 +1040,34 @@ cc_test_host {
+         "fastdeploy/testdata/sample.cd",
+     ],
+ }
++
++aidl_interface {
++    name: "adbroot_aidl_interface",
++    unstable: true,
++    local_include_dir: "aidl",
++    srcs: [
++        "aidl/android/adbroot/IADBRootService.aidl",
++    ],
++    backend: {
++        cpp: {
++            enabled: false,
++        },
++        java: {
++            enabled: false,
++        },
++        ndk: {
++            apex_available: [
++                "//apex_available:platform",
++                "com.android.adbd",
++            ],
++            min_sdk_version: "30",
++        },
++    },
++}
++
++filegroup {
++    name: "adbrootservice_aidl",
++    srcs: [
++        "aidl/android/adbroot/IADBRootService.aidl",
++    ],
++}
+diff --git a/aidl/android/adbroot/IADBRootService.aidl b/aidl/android/adbroot/IADBRootService.aidl
+new file mode 100644
+index 00000000..ada5ce8f
+--- /dev/null
++++ b/aidl/android/adbroot/IADBRootService.aidl
+@@ -0,0 +1,24 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package android.adbroot;
++
++/** {@hide} */
++@PermissionManuallyEnforced
++interface IADBRootService {
++    boolean isSupported();
++    void setEnabled(boolean enabled);
++    boolean getEnabled();
++}
+diff --git a/daemon/restart_service.cpp b/daemon/restart_service.cpp
+index 16d26279..c942c1f2 100644
+--- a/daemon/restart_service.cpp
++++ b/daemon/restart_service.cpp
+@@ -16,6 +16,11 @@
+ 
+ #define TRACE_TAG SERVICES
+ 
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++#include <aidl/android/adbroot/IADBRootService.h>
++#include <android/binder_manager.h>
++#endif
++
+ #include "sysdeps.h"
+ 
+ #include <unistd.h>
+@@ -33,10 +38,33 @@ void restart_root_service(unique_fd fd) {
+         WriteFdExactly(fd.get(), "adbd is already running as root\n");
+         return;
+     }
++
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++    ndk::SpAIBinder binder = ndk::SpAIBinder(AServiceManager_getService("adbroot_service"));
++    std::shared_ptr<aidl::android::adbroot::IADBRootService> service =
++            aidl::android::adbroot::IADBRootService::fromBinder(binder);
++    if (!service) {
++        LOG(ERROR) << "Failed to get adbroot_service interface";
++        return;
++    }
++#endif
++
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++    bool enabled = false;
++    if (auto status = service->getEnabled(&enabled); !status.isOk()) {
++#endif
+     if (!__android_log_is_debuggable()) {
+         WriteFdExactly(fd.get(), "adbd cannot run as root in production builds\n");
+         return;
+     }
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++    }
++    if (!enabled) {
++        WriteFdExactly(fd, "ADB Root access is disabled by system setting - "
++                "enable in Settings -> System -> Developer options\n");
++        return;
++    }
++#endif
+ 
+     LOG(INFO) << "adbd restarting as root";
+     android::base::SetProperty("service.adb.root", "1");
+diff --git a/root/adb_root.rc b/root/adb_root.rc
+new file mode 100644
+index 00000000..8c65c0b5
+--- /dev/null
++++ b/root/adb_root.rc
+@@ -0,0 +1,7 @@
++service adb_root /system_ext/bin/adb_root
++    class main
++    user root
++    group root
++
++on post-fs-data
++    mkdir /data/adbroot 0700 root root
+diff --git a/root/adbroot_service.cpp b/root/adbroot_service.cpp
+new file mode 100644
+index 00000000..710a521e
+--- /dev/null
++++ b/root/adbroot_service.cpp
+@@ -0,0 +1,109 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#include <android/binder_manager.h>
++#include <android-base/file.h>
++#include <android-base/logging.h>
++#include <android-base/properties.h>
++#include <android-base/strings.h>
++#include <private/android_filesystem_config.h>
++
++#include "adbroot_service.h"
++
++namespace {
++const std::string kStoragePath = "/data/adbroot/";
++const std::string kEnabled = "enabled";
++
++static ndk::ScopedAStatus SecurityException(const std::string& msg) {
++    LOG(ERROR) << msg;
++    return ndk::ScopedAStatus(AStatus_fromExceptionCodeWithMessage(EX_SECURITY, msg.c_str()));
++}
++}  // anonymous namespace
++
++namespace aidl {
++namespace android {
++namespace adbroot {
++
++using ::android::AutoMutex;
++using ::android::base::ReadFileToString;
++using ::android::base::SetProperty;
++using ::android::base::Trim;
++using ::android::base::WriteStringToFile;
++
++ADBRootService::ADBRootService() : enabled_(false) {
++    std::string buf;
++    if (ReadFileToString(kStoragePath + kEnabled, &buf)) {
++        enabled_ = Trim(buf) == "1";
++    }
++}
++
++void ADBRootService::Register() {
++    auto service = ndk::SharedRefBase::make<ADBRootService>();
++    binder_status_t status = AServiceManager_addService(
++            service->asBinder().get(), getServiceName());
++
++    if (status != STATUS_OK) {
++        LOG(FATAL) << "Could not register adbroot service: " << status;
++    }
++}
++
++ndk::ScopedAStatus ADBRootService::isSupported(bool* _aidl_return) {
++    uid_t uid = AIBinder_getCallingUid();
++    if (uid != AID_SYSTEM && uid != AID_SHELL) {
++        return SecurityException("Caller must be system or shell");
++    }
++
++    AutoMutex _l(lock_);
++    *_aidl_return = __android_log_is_debuggable();
++    return ndk::ScopedAStatus::ok();
++}
++
++ndk::ScopedAStatus ADBRootService::setEnabled(bool enabled) {
++    uid_t uid = AIBinder_getCallingUid();
++    if (uid != AID_SYSTEM) {
++        return SecurityException("Caller must be system");
++    }
++
++    AutoMutex _l(lock_);
++
++    if (enabled_ != enabled) {
++        enabled_ = enabled;
++        WriteStringToFile(std::to_string(enabled), kStoragePath + kEnabled);
++
++        // Turning off adb root, restart adbd.
++        if (!enabled) {
++            SetProperty("service.adb.root", "0");
++            SetProperty("ctl.restart", "adbd");
++        }
++    }
++
++    return ndk::ScopedAStatus::ok();
++}
++
++ndk::ScopedAStatus ADBRootService::getEnabled(bool* _aidl_return) {
++    uid_t uid = AIBinder_getCallingUid();
++    if (uid != AID_SYSTEM && uid != AID_SHELL) {
++        return SecurityException("Caller must be system or shell");
++    }
++
++    AutoMutex _l(lock_);
++    *_aidl_return = enabled_;
++    return ndk::ScopedAStatus::ok();
++}
++
++}  // namespace adbroot
++}  // namespace android
++}  // namespace aidl
+diff --git a/root/adbroot_service.h b/root/adbroot_service.h
+new file mode 100644
+index 00000000..9881542b
+--- /dev/null
++++ b/root/adbroot_service.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (C) 2019 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++#pragma once
++
++#include <aidl/android/adbroot/BnADBRootService.h>
++#include <android/binder_status.h>
++#include <log/log_properties.h>
++#include <utils/Mutex.h>
++
++namespace aidl {
++namespace android {
++namespace adbroot {
++
++using ::android::Mutex;
++
++class ADBRootService : public BnADBRootService {
++  public:
++    ADBRootService();
++
++    static void Register();
++
++    ndk::ScopedAStatus isSupported(bool* _aidl_return) override;
++    ndk::ScopedAStatus setEnabled(bool enabled) override;
++    ndk::ScopedAStatus getEnabled(bool* _aidl_return) override;
++
++    static char const* getServiceName() { return "adbroot_service"; }
++  private:
++    bool enabled_;
++    Mutex lock_;
++};
++
++}  // namespace adbroot
++}  // namespace android
++}  // namespace aidl
+diff --git a/root/main.cpp b/root/main.cpp
+new file mode 100644
+index 00000000..7de0945e
+--- /dev/null
++++ b/root/main.cpp
+@@ -0,0 +1,31 @@
++//
++// Copyright (C) 2019 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++#include <android/binder_process.h>
++#include <android-base/logging.h>
++
++#include "adbroot_service.h"
++
++int main(int /* argc */, char** argv) {
++    android::base::InitLogging(argv, android::base::LogdLogger(android::base::SYSTEM));
++
++    aidl::android::adbroot::ADBRootService::Register();
++
++    ABinderProcess_startThreadPool();
++    ABinderProcess_joinThreadPool();
++
++    return 0;
++}

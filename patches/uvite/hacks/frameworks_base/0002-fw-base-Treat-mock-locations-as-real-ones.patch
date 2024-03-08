@@ -1,0 +1,37 @@
+From 38a66729cefa3cadd5f8157fe6b6cf862b82a724 Mon Sep 17 00:00:00 2001
+From: Aayush Gupta <aayushgupta219@gmail.com>
+Date: Fri, 22 May 2020 20:49:53 +0530
+Subject: [PATCH] fw/base: Treat mock locations as real ones
+
+Change-Id: I44d87fd5639180321d1854e776411a3425502dad
+[yurical: Adapt for U; isFromMockProvider() is deprecated]
+Signed-off-by: Yurical <yurical1@outlook.com>
+---
+ location/java/android/location/Location.java | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/location/java/android/location/Location.java b/location/java/android/location/Location.java
+index fd3e5a22e969..33de75ed6345 100644
+--- a/location/java/android/location/Location.java
++++ b/location/java/android/location/Location.java
+@@ -781,7 +781,7 @@ public class Location implements Parcelable {
+      */
+     @Deprecated
+     public boolean isFromMockProvider() {
+-        return isMock();
++        return false;
+     }
+ 
+     /**
+@@ -805,7 +805,7 @@ public class Location implements Parcelable {
+      * @see LocationManager#addTestProvider
+      */
+     public boolean isMock() {
+-        return (mFieldsMask & HAS_MOCK_PROVIDER_MASK) != 0;
++        return false;
+     }
+ 
+     /**
+-- 
+2.43.0
+

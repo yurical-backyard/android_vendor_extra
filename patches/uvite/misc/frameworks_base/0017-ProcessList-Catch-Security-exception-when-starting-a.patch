@@ -1,0 +1,32 @@
+From cfcbe18fd41ea6ad5a61ec7fed59a4054cad7ba1 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Wed, 24 May 2023 22:43:31 +0800
+Subject: [PATCH] ProcessList: Catch Security exception when starting a
+ frozen package
+
+05-24 21:46:13.689  1418  1461 E ActivityManager: Failure starting process com.android.launcher3
+05-24 21:46:13.689  1418  1461 E ActivityManager: java.lang.SecurityException: Package com.android.launcher3 is currently frozen!
+05-24 21:46:13.689  1418  1461 E ActivityManager: 	at com.android.server.pm.PackageManagerService.checkPackageStartable(PackageManagerService.java:4513)
+05-24 21:46:13.689  1418  1461 E ActivityManager: 	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.checkPackageStartable(PackageManagerService.java:4595)
+
+Change-Id: I2be5ebb45dce51938a08c5415d27e811847c0531
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ services/core/java/com/android/server/am/ProcessList.java | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/services/core/java/com/android/server/am/ProcessList.java b/services/core/java/com/android/server/am/ProcessList.java
+index 66430a956139..bae142ea53d6 100644
+--- a/services/core/java/com/android/server/am/ProcessList.java
++++ b/services/core/java/com/android/server/am/ProcessList.java
+@@ -1765,6 +1765,7 @@ public final class ProcessList {
+                 AppGlobals.getPackageManager().checkPackageStartable(app.info.packageName, userId);
+             } catch (RemoteException e) {
+                 throw e.rethrowAsRuntimeException();
++            } catch (SecurityException e) {
+             }
+ 
+             int uid = app.uid;
+-- 
+2.43.0
+

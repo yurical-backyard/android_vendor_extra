@@ -1,0 +1,185 @@
+From 5de92f382fb582a38c557ef76d5ff809cfe0a442 Mon Sep 17 00:00:00 2001
+From: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date: Sat, 2 Nov 2019 23:09:40 +0100
+Subject: [PATCH] Add toggle to enable ADB root
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 24 14:33:05 2019 +0800
+
+    Settings: Mark adb root toggle as non-persistent
+
+     * It's always read from the binder API
+
+    Change-Id: I88234450a2dcfbea985eb3c48114d869db331cd0
+
+Author: dianlujitao <dianlujitao@lineageos.org>
+Date:   Sun Nov 24 14:34:51 2019 +0800
+
+    Settings: Remove ADBROOT permission from manifest
+
+    Change-Id: I2a458cda22b3d370734adb89ff8e0303ca1c8374
+
+Author: Luca Stefani <luca.stefani.ge1@gmail.com>
+Date:   Fri Mar 13 23:05:25 2020 +0100
+
+    Hide ADB Root preference on user builds
+
+    Change-Id: I8c9251ddda0eb15e1134d4fafbf3d972f5fa8809
+
+Author: LuK1337 <priv.luk@gmail.com>
+Date:   Thu Mar 24 09:06:33 2022 +0100
+
+    AdbRootPreferenceController: Use ADBRootService::isSupported()
+
+    This allows us to show the preference in Settings even if
+    Build.IS_DEBUGGABLE is false.
+
+    Change-Id: I28f8a0fefc7b611ce7433de3dae5579abdb73274
+
+Change-Id: Ic80dbf79265c0fe7113f42299479873befb05004
+---
+ res/values/aospa_strings.xml                  |  4 +
+ res/xml/development_settings.xml              |  7 ++
+ .../AdbRootPreferenceController.java          | 84 +++++++++++++++++++
+ .../DevelopmentSettingsDashboardFragment.java |  1 +
+ 4 files changed, 96 insertions(+)
+ create mode 100644 src/com/android/settings/development/AdbRootPreferenceController.java
+
+diff --git a/res/values/aospa_strings.xml b/res/values/aospa_strings.xml
+index 9c2b0cab678..1dea0f15894 100644
+--- a/res/values/aospa_strings.xml
++++ b/res/values/aospa_strings.xml
+@@ -15,6 +15,10 @@
+ -->
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+ 
++    <!-- Android debugging as root -->
++    <string name="adb_enable_root">Rooted debugging</string>
++    <string name="adb_enable_summary_root">Allow running Android debugging as root</string>
++
+     <!-- Paranoid Android version -->
+     <string name="aospa_version">Paranoid Android version</string>
+ 
+diff --git a/res/xml/development_settings.xml b/res/xml/development_settings.xml
+index 8f8bb940fc1..b489ac9cdb4 100644
+--- a/res/xml/development_settings.xml
++++ b/res/xml/development_settings.xml
+@@ -158,6 +158,13 @@
+             android:title="@string/enable_adb"
+             android:summary="@string/enable_adb_summary" />
+ 
++        <SwitchPreference
++            android:key="enable_adb_root"
++            android:title="@string/adb_enable_root"
++            android:summary="@string/adb_enable_summary_root"
++            android:dependency="enable_adb"
++            android:persistent="false" />
++
+         <Preference android:key="clear_adb_keys"
+                     android:title="@string/clear_adb_keys" />
+ 
+diff --git a/src/com/android/settings/development/AdbRootPreferenceController.java b/src/com/android/settings/development/AdbRootPreferenceController.java
+new file mode 100644
+index 00000000000..54f249ef9f6
+--- /dev/null
++++ b/src/com/android/settings/development/AdbRootPreferenceController.java
+@@ -0,0 +1,84 @@
++/*
++ * Copyright (C) 2018 The LineageOS Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.development;
++
++import android.adb.ADBRootService;
++import android.content.Context;
++import android.os.UserManager;
++
++import androidx.preference.Preference;
++import androidx.preference.PreferenceScreen;
++import androidx.preference.SwitchPreference;
++
++import com.android.settings.R;
++import com.android.settings.core.PreferenceControllerMixin;
++import com.android.settingslib.development.DeveloperOptionsPreferenceController;
++
++public class AdbRootPreferenceController extends DeveloperOptionsPreferenceController
++        implements Preference.OnPreferenceChangeListener, PreferenceControllerMixin {
++
++    private static final String TAG = "AdbRootPreferenceController";
++    private static final String PREF_KEY = "enable_adb_root";
++
++    private final ADBRootService mADBRootService;
++
++    public AdbRootPreferenceController(Context context,
++            DevelopmentSettingsDashboardFragment fragment) {
++        super(context);
++
++        mADBRootService = new ADBRootService();
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return PREF_KEY;
++    }
++
++    @Override
++    public boolean isAvailable() {
++        return mADBRootService.isSupported();
++    }
++
++    @Override
++    public void displayPreference(PreferenceScreen screen) {
++        super.displayPreference(screen);
++
++        ((SwitchPreference) mPreference).setChecked(mADBRootService.getEnabled());
++
++        if (!isAdminUser()) {
++            mPreference.setEnabled(false);
++        }
++    }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        final boolean rootEnabled = (Boolean) newValue;
++        mADBRootService.setEnabled(rootEnabled);
++        return true;
++    }
++
++    @Override
++    protected void onDeveloperOptionsSwitchEnabled() {
++        if (isAdminUser()) {
++            mPreference.setEnabled(true);
++        }
++    }
++
++    boolean isAdminUser() {
++        return ((UserManager) mContext.getSystemService(Context.USER_SERVICE)).isAdminUser();
++    }
++}
+diff --git a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+index dff1ae61080..03b3672301b 100644
+--- a/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
++++ b/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+@@ -635,6 +635,7 @@ public class DevelopmentSettingsDashboardFragment extends RestrictedDashboardFra
+         controllers.add(new DisableAutomaticUpdatesPreferenceController(context));
+         controllers.add(new SelectDSUPreferenceController(context));
+         controllers.add(new AdbPreferenceController(context, fragment));
++        controllers.add(new AdbRootPreferenceController(context, fragment));
+         controllers.add(new ClearAdbKeysPreferenceController(context, fragment));
+         controllers.add(new WirelessDebuggingPreferenceController(context, lifecycle));
+         controllers.add(new AdbAuthorizationTimeoutPreferenceController(context));
+-- 
+2.43.0
+

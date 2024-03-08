@@ -1,0 +1,41 @@
+From 62f32f042d7f2543a80a8e61c8dd9f238af3090d Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 15 May 2023 14:14:41 +0800
+Subject: [PATCH] services: Fix ArrayIndexOutOfBoundsException on
+ `updateContentCaptureOptions`
+
+05-15 14:02:18.103  1373  2022 W Binder  : Caught a RuntimeException from the binder stub implementation.
+05-15 14:02:18.103  1373  2022 W Binder  : java.lang.ArrayIndexOutOfBoundsException: Array index out of range: 0
+05-15 14:02:18.103  1373  2022 W Binder  : 	at android.util.ArraySet.valueAt(ArraySet.java:422)
+05-15 14:02:18.103  1373  2022 W Binder  : 	at com.android.server.contentcapture.ContentCapturePerUserService$ContentCaptureServiceRemoteCallback.updateContentCaptureOptions(ContentCapturePerUserService.java:733)
+05-15 14:02:18.103  1373  2022 W Binder  : 	at com.android.server.contentcapture.ContentCapturePerUserService$ContentCaptureServiceRemoteCallback.setContentCaptureWhitelist(ContentCapturePerUserService.java:646)
+05-15 14:02:18.103  1373  2022 W Binder  : 	at android.service.contentcapture.IContentCaptureServiceCallback$Stub.onTransact(IContentCaptureServiceCallback.java:115)
+05-15 14:02:18.103  1373  2022 W Binder  : 	at android.os.Binder.execTransactInternal(Binder.java:1285)
+05-15 14:02:18.103  1373  2022 W Binder  : 	at android.os.Binder.execTransact(Binder.java:1244)
+
+Change-Id: Icbcc6b6dc8f53186ac2705c3f0b7bd3953df77a2
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../server/contentcapture/ContentCapturePerUserService.java   | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/services/contentcapture/java/com/android/server/contentcapture/ContentCapturePerUserService.java b/services/contentcapture/java/com/android/server/contentcapture/ContentCapturePerUserService.java
+index 34787a390d48..56a0bb601080 100644
+--- a/services/contentcapture/java/com/android/server/contentcapture/ContentCapturePerUserService.java
++++ b/services/contentcapture/java/com/android/server/contentcapture/ContentCapturePerUserService.java
+@@ -730,10 +730,10 @@ final class ContentCapturePerUserService
+             }
+             addingCount = CollectionUtils.size(adding);
+             EventLog.writeEvent(EventLogTags.CC_UPDATE_OPTIONS, mUserId, addingCount);
+-            for (int i = 0; i < addingCount; i++) {
++            for (int i = 0; i < addingCount && i < adding.size(); i++) {
+                 String packageName = adding.valueAt(i);
+                 ContentCaptureOptions options = mMaster.mGlobalContentCaptureOptions
+-                        .getOptions(mUserId, packageName);
++                             .getOptions(mUserId, packageName);
+                 mMaster.updateOptions(packageName, options);
+             }
+         }
+-- 
+2.43.0
+

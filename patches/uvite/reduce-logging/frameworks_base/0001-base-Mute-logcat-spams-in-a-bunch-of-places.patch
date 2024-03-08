@@ -1,0 +1,267 @@
+From 7c355c89c274797d6e91b0d031b87297c47ba8c8 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sat, 3 Feb 2024 21:46:23 +0900
+Subject: [PATCH] base: Mute logcat spams in a bunch of places
+
+---
+ .../com/android/server/alarm/AlarmManagerService.java |  4 ----
+ core/java/android/app/ActivityThread.java             |  5 -----
+ core/java/android/content/res/Resources.java          | 11 -----------
+ core/java/android/view/ViewRootImpl.java              |  1 -
+ .../android/internal/os/KernelCpuUidTimeReader.java   |  5 -----
+ .../android/internal/widget/LocalImageResolver.java   |  1 -
+ libs/androidfw/ResourceTypes.cpp                      |  7 -------
+ libs/hwui/AnimatorManager.cpp                         |  2 --
+ .../src/com/android/systemui/power/PowerUI.java       |  3 ---
+ .../android/systemui/statusbar/phone/ScrimState.java  |  8 --------
+ .../java/com/android/server/am/ActiveServices.java    |  4 ----
+ .../server/display/DisplayPowerController.java        |  1 -
+ .../server/inputmethod/HandwritingModeController.java |  1 -
+ .../pm/permission/DefaultPermissionGrantPolicy.java   |  1 -
+ .../jni/com_android_server_lights_LightsService.cpp   |  1 -
+ 15 files changed, 55 deletions(-)
+
+diff --git a/apex/jobscheduler/service/java/com/android/server/alarm/AlarmManagerService.java b/apex/jobscheduler/service/java/com/android/server/alarm/AlarmManagerService.java
+index df1b66612ea2..37970aa34cf1 100644
+--- a/apex/jobscheduler/service/java/com/android/server/alarm/AlarmManagerService.java
++++ b/apex/jobscheduler/service/java/com/android/server/alarm/AlarmManagerService.java
+@@ -5925,10 +5925,6 @@ public class AlarmManagerService extends SystemService {
+                 mAlarmsPerUid.removeAt(uidIndex);
+             }
+         }
+-        if (oldCount < decrement) {
+-            Slog.wtf(TAG, "Attempt to decrement existing alarm count " + oldCount + " by "
+-                    + decrement + " for uid " + uid);
+-        }
+     }
+ 
+     private class ShellCmd extends ShellCommand {
+diff --git a/core/java/android/app/ActivityThread.java b/core/java/android/app/ActivityThread.java
+index 000269702237..c2eea45585d1 100644
+--- a/core/java/android/app/ActivityThread.java
++++ b/core/java/android/app/ActivityThread.java
+@@ -7456,11 +7456,6 @@ public final class ActivityThread extends ClientTransactionHandler
+             }
+         }
+         if (holder == null) {
+-            if (UserManager.get(c).isUserUnlocked(userId)) {
+-                Slog.e(TAG, "Failed to find provider info for " + auth);
+-            } else {
+-                Slog.w(TAG, "Failed to find provider info for " + auth + " (user not unlocked)");
+-            }
+             return null;
+         }
+ 
+diff --git a/core/java/android/content/res/Resources.java b/core/java/android/content/res/Resources.java
+index c3d5b71e7349..426c640b47c7 100644
+--- a/core/java/android/content/res/Resources.java
++++ b/core/java/android/content/res/Resources.java
+@@ -906,11 +906,6 @@ public class Resources {
+     @Deprecated
+     public Drawable getDrawable(@DrawableRes int id) throws NotFoundException {
+         final Drawable d = getDrawable(id, null);
+-        if (d != null && d.canApplyTheme()) {
+-            Log.w(TAG, "Drawable " + getResourceName(id) + " has unresolved theme "
+-                    + "attributes! Consider using Resources.getDrawable(int, Theme) or "
+-                    + "Context.getDrawable(int).", new RuntimeException());
+-        }
+         return d;
+     }
+ 
+@@ -1104,12 +1099,6 @@ public class Resources {
+     @Deprecated
+     public ColorStateList getColorStateList(@ColorRes int id) throws NotFoundException {
+         final ColorStateList csl = getColorStateList(id, null);
+-        if (csl != null && csl.canApplyTheme()) {
+-            Log.w(TAG, "ColorStateList " + getResourceName(id) + " has "
+-                    + "unresolved theme attributes! Consider using "
+-                    + "Resources.getColorStateList(int, Theme) or "
+-                    + "Context.getColorStateList(int).", new RuntimeException());
+-        }
+         return csl;
+     }
+ 
+diff --git a/core/java/android/view/ViewRootImpl.java b/core/java/android/view/ViewRootImpl.java
+index cb76fd58dc19..e16949567fb2 100644
+--- a/core/java/android/view/ViewRootImpl.java
++++ b/core/java/android/view/ViewRootImpl.java
+@@ -7351,7 +7351,6 @@ public final class ViewRootImpl implements ViewParent,
+         }
+         if (x < 0 || x >= mView.getWidth() || y < 0 || y >= mView.getHeight()) {
+             // E.g. when moving window divider with mouse
+-            Slog.d(mTag, "updatePointerIcon called with position out of bounds");
+             return false;
+         }
+ 
+diff --git a/core/java/com/android/internal/os/KernelCpuUidTimeReader.java b/core/java/com/android/internal/os/KernelCpuUidTimeReader.java
+index c801be0ce3e7..51407db8776c 100644
+--- a/core/java/com/android/internal/os/KernelCpuUidTimeReader.java
++++ b/core/java/com/android/internal/os/KernelCpuUidTimeReader.java
+@@ -497,8 +497,6 @@ public abstract class KernelCpuUidTimeReader<T> {
+                 // Unit is 10ms.
+                 mDeltaTimes[i] = mCurTimes[i] - lastTimes[i];
+                 if (mDeltaTimes[i] < 0) {
+-                    Slog.e(mTag, "Negative delta from freq time for uid: " + uid
+-                            + ", delta: " + mDeltaTimes[i]);
+                     return;
+                 }
+                 notify |= mDeltaTimes[i] > 0;
+@@ -672,9 +670,6 @@ public abstract class KernelCpuUidTimeReader<T> {
+                     if (cb != null) {
+                         cb.onUidCpuTime(uid, delta);
+                     }
+-                } else if (delta < 0) {
+-                    Slog.e(mTag, "Negative delta from active time for uid: " + uid
+-                            + ", delta: " + delta);
+                 }
+             }
+         }
+diff --git a/core/java/com/android/internal/widget/LocalImageResolver.java b/core/java/com/android/internal/widget/LocalImageResolver.java
+index 9ef7ce38fc09..a2a29ee0220c 100644
+--- a/core/java/com/android/internal/widget/LocalImageResolver.java
++++ b/core/java/com/android/internal/widget/LocalImageResolver.java
+@@ -236,7 +236,6 @@ public class LocalImageResolver {
+         // in some cases despite it not saying so. Rethrow it as an IOException to keep
+         // our API contract.
+         } catch (IOException | Resources.NotFoundException e) {
+-            Log.d(TAG, "Couldn't use ImageDecoder for drawable, falling back to non-resized load.");
+             return null;
+         }
+     }
+diff --git a/libs/androidfw/ResourceTypes.cpp b/libs/androidfw/ResourceTypes.cpp
+index 29d33da6b2f7..4fbfc115e1ce 100644
+--- a/libs/androidfw/ResourceTypes.cpp
++++ b/libs/androidfw/ResourceTypes.cpp
+@@ -4432,13 +4432,6 @@ bool ResTable::getResourceName(uint32_t resID, bool allowUtf8, resource_name* ou
+     const int e = Res_GETENTRY(resID);
+ 
+     if (p < 0) {
+-        if (Res_GETPACKAGE(resID)+1 == 0) {
+-            ALOGW("No package identifier when getting name for resource number 0x%08x", resID);
+-        } else {
+-#ifndef STATIC_ANDROIDFW_FOR_TOOLS
+-            ALOGW("No known package when getting name for resource number 0x%08x", resID);
+-#endif
+-        }
+         return false;
+     }
+     if (t < 0) {
+diff --git a/libs/hwui/AnimatorManager.cpp b/libs/hwui/AnimatorManager.cpp
+index 078041411a21..9de928a22042 100644
+--- a/libs/hwui/AnimatorManager.cpp
++++ b/libs/hwui/AnimatorManager.cpp
+@@ -70,8 +70,6 @@ void AnimatorManager::setAnimationHandle(AnimationHandle* handle) {
+ void AnimatorManager::pushStaging() {
+     if (mNewAnimators.size()) {
+         if (CC_UNLIKELY(!mAnimationHandle)) {
+-            ALOGW("Trying to start new animators on %p (%s) without an animation handle!", &mParent,
+-                  mParent.getName());
+             return;
+         }
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/power/PowerUI.java b/packages/SystemUI/src/com/android/systemui/power/PowerUI.java
+index 5a1ad96da7a9..74a31af6a8e9 100644
+--- a/packages/SystemUI/src/com/android/systemui/power/PowerUI.java
++++ b/packages/SystemUI/src/com/android/systemui/power/PowerUI.java
+@@ -449,9 +449,6 @@ public class PowerUI implements CoreStartable, CommandQueue.Callbacks {
+     boolean shouldShowHybridWarning(BatteryStateSnapshot snapshot) {
+         if (snapshot.getPlugged()
+                 || snapshot.getBatteryStatus() == BatteryManager.BATTERY_STATUS_UNKNOWN) {
+-            Slog.d(TAG, "can't show warning due to - plugged: " + snapshot.getPlugged()
+-                    + " status unknown: "
+-                    + (snapshot.getBatteryStatus() == BatteryManager.BATTERY_STATUS_UNKNOWN));
+             return false;
+         }
+ 
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
+index e3b65ab27f48..1046fcd588df 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/ScrimState.java
+@@ -17,7 +17,6 @@
+ package com.android.systemui.statusbar.phone;
+ 
+ import android.graphics.Color;
+-import android.os.Trace;
+ 
+ import com.android.systemui.dock.DockManager;
+ import com.android.systemui.scrim.ScrimView;
+@@ -390,13 +389,6 @@ public enum ScrimState {
+             tint = scrim == mScrimInFront ? ScrimController.DEBUG_FRONT_TINT
+                     : ScrimController.DEBUG_BEHIND_TINT;
+         }
+-        Trace.traceCounter(Trace.TRACE_TAG_APP,
+-                scrim == mScrimInFront ? "front_scrim_alpha" : "back_scrim_alpha",
+-                (int) (alpha * 255));
+-
+-        Trace.traceCounter(Trace.TRACE_TAG_APP,
+-                scrim == mScrimInFront ? "front_scrim_tint" : "back_scrim_tint",
+-                Color.alpha(tint));
+ 
+         scrim.setTint(tint);
+         scrim.setViewAlpha(alpha);
+diff --git a/services/core/java/com/android/server/am/ActiveServices.java b/services/core/java/com/android/server/am/ActiveServices.java
+index c601de2524e9..eef031664a60 100644
+--- a/services/core/java/com/android/server/am/ActiveServices.java
++++ b/services/core/java/com/android/server/am/ActiveServices.java
+@@ -1027,10 +1027,6 @@ public final class ActiveServices {
+             final int allowed = mAm.getAppStartModeLOSP(appUid, appPackageName, appTargetSdkVersion,
+                     callingPid, false, false, forcedStandby);
+             if (allowed != ActivityManager.APP_START_MODE_NORMAL) {
+-                Slog.w(TAG, "Background start not allowed: service "
+-                        + service + " to " + r.shortInstanceName
+-                        + " from pid=" + callingPid + " uid=" + callingUid
+-                        + " pkg=" + callingPackage + " startFg?=" + fgRequired);
+                 if (allowed == ActivityManager.APP_START_MODE_DELAYED || forceSilentAbort) {
+                     // In this case we are silently disabling the app, to disrupt as
+                     // little as possible existing apps.
+diff --git a/services/core/java/com/android/server/display/DisplayPowerController.java b/services/core/java/com/android/server/display/DisplayPowerController.java
+index 4a3fde05ef35..f1f044b91285 100644
+--- a/services/core/java/com/android/server/display/DisplayPowerController.java
++++ b/services/core/java/com/android/server/display/DisplayPowerController.java
+@@ -1989,7 +1989,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
+             newEvent.setAdjustmentFlags(brightnessAdjustmentFlags);
+             newEvent.setFlags(newEvent.getFlags() | (userSetBrightnessChanged
+                     ? BrightnessEvent.FLAG_USER_SET : 0));
+-            Slog.i(mTag, newEvent.toString(/* includeTime= */ false));
+ 
+             if (userSetBrightnessChanged
+                     || newEvent.getReason().getReason() != BrightnessReason.REASON_TEMPORARY) {
+diff --git a/services/core/java/com/android/server/inputmethod/HandwritingModeController.java b/services/core/java/com/android/server/inputmethod/HandwritingModeController.java
+index 7b613874e25e..111a4c7bd9b6 100644
+--- a/services/core/java/com/android/server/inputmethod/HandwritingModeController.java
++++ b/services/core/java/com/android/server/inputmethod/HandwritingModeController.java
+@@ -143,7 +143,6 @@ final class HandwritingModeController {
+ 
+     OptionalInt getCurrentRequestId() {
+         if (mHandwritingSurface == null) {
+-            Slog.e(TAG, "Cannot get requestId: Handwriting was not initialized.");
+             return OptionalInt.empty();
+         }
+         return OptionalInt.of(mCurrentRequestId);
+diff --git a/services/core/java/com/android/server/pm/permission/DefaultPermissionGrantPolicy.java b/services/core/java/com/android/server/pm/permission/DefaultPermissionGrantPolicy.java
+index 951052922586..cba215138bda 100644
+--- a/services/core/java/com/android/server/pm/permission/DefaultPermissionGrantPolicy.java
++++ b/services/core/java/com/android/server/pm/permission/DefaultPermissionGrantPolicy.java
+@@ -314,7 +314,6 @@ final class DefaultPermissionGrantPolicy {
+                 return mContext.getPackageManager().getPackageInfo(pkg,
+                         DEFAULT_PACKAGE_INFO_QUERY_FLAGS);
+             } catch (NameNotFoundException e) {
+-                Slog.e(TAG, "Package not found: " + pkg);
+                 return null;
+             }
+         }
+diff --git a/services/core/jni/com_android_server_lights_LightsService.cpp b/services/core/jni/com_android_server_lights_LightsService.cpp
+index 26f6d7428fcc..b30dc98d89ff 100644
+--- a/services/core/jni/com_android_server_lights_LightsService.cpp
++++ b/services/core/jni/com_android_server_lights_LightsService.cpp
+@@ -111,7 +111,6 @@ static void processReturn(
+         case Status::SUCCESS:
+             break;
+         case Status::LIGHT_NOT_SUPPORTED:
+-            ALOGE("Light requested not available on this device. %d", type);
+             break;
+         case Status::BRIGHTNESS_NOT_SUPPORTED:
+             ALOGE("Brightness parameter not supported on this device: %d",
+-- 
+2.43.0
+

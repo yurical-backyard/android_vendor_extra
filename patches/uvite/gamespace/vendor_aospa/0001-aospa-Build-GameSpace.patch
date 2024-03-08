@@ -1,0 +1,29 @@
+From 25582d845a1f03fcfc8c03be65b6a03d7f8892e3 Mon Sep 17 00:00:00 2001
+From: Gustavo Mendes <gusttavo.me@outlook.com>
+Date: Fri, 19 Jan 2024 15:19:53 -0300
+Subject: [PATCH] aospa: Build GameSpace
+
+Change-Id: I4ed986c0770855a0039e96f46349d98074b68e70
+Signed-off-by: Gustavo Mendes <gusttavo.me@outlook.com>
+---
+ target/product/aospa-target.mk | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/target/product/aospa-target.mk b/target/product/aospa-target.mk
+index 98f8452..8335b8e 100644
+--- a/target/product/aospa-target.mk
++++ b/target/product/aospa-target.mk
+@@ -88,6 +88,10 @@ PRODUCT_COPY_FILES += \
+ 
+ $(call inherit-product, external/google-fonts/lato/fonts.mk)
+ 
++# Game Space
++PRODUCT_PACKAGES += \
++    GameSpace
++
+ # Gestures
+ PRODUCT_PACKAGES += \
+     vendor.aospa.power-service
+-- 
+2.43.0
+

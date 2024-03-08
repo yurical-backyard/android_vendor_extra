@@ -1,0 +1,31 @@
+From f2cfdfff03e11fca28b8b39e1e2bc45d2dd07238 Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 21:02:59 +0800
+Subject: [PATCH] Revert "[PSS][a11y] Permission Dialog warning text
+ overlaps"
+
+This reverts commit 9b2dc18a97a55c924e5c48624c63143e92740794.
+
+Change-Id: I21ab8ddc5768f9dd6e03c3d4fad33c18be06c82e
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ packages/SystemUI/res/layout/screen_share_dialog.xml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/res/layout/screen_share_dialog.xml b/packages/SystemUI/res/layout/screen_share_dialog.xml
+index 37964158a4aa..9af46c5b739c 100644
+--- a/packages/SystemUI/res/layout/screen_share_dialog.xml
++++ b/packages/SystemUI/res/layout/screen_share_dialog.xml
+@@ -64,7 +64,8 @@
+             android:layout_height="wrap_content"
+             android:text="@string/screenrecord_permission_dialog_warning_entire_screen"
+             style="@style/TextAppearance.Dialog.Body.Message"
+-            android:gravity="start"/>
++            android:gravity="start"
++            android:lineHeight="@dimen/screenrecord_warning_line_height"/>
+ 
+         <!-- Buttons -->
+         <LinearLayout
+-- 
+2.43.0
+

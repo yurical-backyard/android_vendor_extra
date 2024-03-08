@@ -1,0 +1,26 @@
+From 6e56373dcbc8a81b97303a6f2dd976be0ac06a1b Mon Sep 17 00:00:00 2001
+From: Steve Kondik <shade@chemlab.org>
+Date: Sun, 18 May 2014 15:34:30 -0700
+Subject: [PATCH] build: Include vendor/extra/BoardConfigExtra.mk if
+ available
+
+Change-Id: Icd0db0852ceee5cb5c701c9a40b829e1f3ebd69e
+---
+ core/config.mk | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/core/config.mk b/core/config.mk
+index 6acaa56ef4..f0f5dedce7 100644
+--- a/core/config.mk
++++ b/core/config.mk
+@@ -410,6 +410,7 @@ endif
+ # See envsetup.mk for a description of SCAN_EXCLUDE_DIRS
+ FIND_LEAVES_EXCLUDES := $(addprefix --prune=, $(SCAN_EXCLUDE_DIRS) .repo .git)
+ 
++-include vendor/extra/BoardConfigExtra.mk
+ ifneq ($(AOSPA_BUILD),)
+ include vendor/aospa/target/board/BoardConfigAOSPA.mk
+ endif
+-- 
+2.43.0
+

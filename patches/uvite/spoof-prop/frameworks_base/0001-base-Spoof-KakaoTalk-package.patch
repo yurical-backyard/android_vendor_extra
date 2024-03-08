@@ -1,0 +1,90 @@
+From aaa1df089507e1b74ba0b75a7c62a9992a083c2b Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sat, 30 Mar 2024 20:26:38 +0900
+Subject: [PATCH] base: Spoof KakaoTalk package
+
+KakaoTalk, South Korea's most popular messaging app, only allows multi-
+device usage from certified tablets. Spoof KakaoTalk in the same manner
+as we spoofed the Netflix package.
+---
+ .../com/android/internal/util/PropImitationHooks.java     | 8 +++++++-
+ core/res/res/values/aospa_config.xml                      | 3 +++
+ core/res/res/values/aospa_symbols.xml                     | 1 +
+ 3 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/core/java/com/android/internal/util/PropImitationHooks.java b/core/java/com/android/internal/util/PropImitationHooks.java
+index 22c0dfa8a59b..7b8bd884cb06 100644
+--- a/core/java/com/android/internal/util/PropImitationHooks.java
++++ b/core/java/com/android/internal/util/PropImitationHooks.java
+@@ -48,6 +48,7 @@ public class PropImitationHooks {
+     private static final String PROCESS_GMS_UNSTABLE = PACKAGE_GMS + ".unstable";
+     private static final String PACKAGE_NETFLIX = "com.netflix.mediaclient";
+     private static final String PACKAGE_GPHOTOS = "com.google.android.apps.photos";
++    private static final String PACKAGE_KAKAOTALK = "com.kakao.talk";
+ 
+     private static final String PROP_SECURITY_PATCH = "persist.sys.pihooks.security_patch";
+     private static final String PROP_FIRST_API_LEVEL = "persist.sys.pihooks.first_api_level";
+@@ -66,7 +67,7 @@ public class PropImitationHooks {
+     );
+ 
+     private static volatile String[] sCertifiedProps;
+-    private static volatile String sStockFp, sNetflixModel;
++    private static volatile String sStockFp, sNetflixModel, sKakaotalkModel;
+ 
+     private static volatile String sProcessName;
+     private static volatile boolean sIsPixelDevice, sIsGms, sIsFinsky, sIsPhotos;
+@@ -89,6 +90,7 @@ public class PropImitationHooks {
+         sCertifiedProps = res.getStringArray(R.array.config_certifiedBuildProperties);
+         sStockFp = res.getString(R.string.config_stockFingerprint);
+         sNetflixModel = res.getString(R.string.config_netflixSpoofModel);
++        sKakaotalkModel = res.getString(R.string.config_kakaotalkSpoofModel);
+ 
+         sProcessName = processName;
+         sIsPixelDevice = Build.MANUFACTURER.equals("Google") && Build.MODEL.contains("Pixel");
+@@ -99,6 +101,7 @@ public class PropImitationHooks {
+         /* Set Certified Properties for GMSCore
+          * Set Stock Fingerprint for ARCore
+          * Set custom model for Netflix
++         * Set custom model for KakaoTalk
+          */
+         if (sIsGms) {
+             setCertifiedPropsForGms();
+@@ -108,6 +111,9 @@ public class PropImitationHooks {
+         } else if (!sNetflixModel.isEmpty() && packageName.equals(PACKAGE_NETFLIX)) {
+             dlog("Setting model to " + sNetflixModel + " for Netflix");
+             setPropValue("MODEL", sNetflixModel);
++        } else if (!sKakaotalkModel.isEmpty() && packageName.equals(PACKAGE_KAKAOTALK)) {
++            dlog("Setting model to " + sKakaotalkModel + " for KakaoTalk");
++            setPropValue("MODEL", sKakaotalkModel);
+         }
+     }
+ 
+diff --git a/core/res/res/values/aospa_config.xml b/core/res/res/values/aospa_config.xml
+index d1bde65c5b0c..d7c4eca9bf50 100644
+--- a/core/res/res/values/aospa_config.xml
++++ b/core/res/res/values/aospa_config.xml
+@@ -114,6 +114,9 @@
+     <!-- Device model (Build.MODEL) to spoof for netflix, if not empty -->
+     <string name="config_netflixSpoofModel" translatable="false"></string>
+ 
++    <!-- Device model (Build.MODEL) to spoof for kakaotalk, if not empty -->
++    <string name="config_kakaotalkSpoofModel" translatable="false"></string>
++
+     <!-- Display color inversion availability -->
+     <bool name="config_displayInversionAvailable">true</bool>
+ 
+diff --git a/core/res/res/values/aospa_symbols.xml b/core/res/res/values/aospa_symbols.xml
+index 22f9ee6f532f..793414878234 100644
+--- a/core/res/res/values/aospa_symbols.xml
++++ b/core/res/res/values/aospa_symbols.xml
+@@ -80,6 +80,7 @@
+     <java-symbol type="array" name="config_certifiedBuildProperties" />
+     <java-symbol type="string" name="config_stockFingerprint" />
+     <java-symbol type="string" name="config_netflixSpoofModel" />
++    <java-symbol type="string" name="config_kakaotalkSpoofModel" />
+ 
+     <!-- Cycle through ringer modes -->
+     <java-symbol type="string" name="volume_dialog_ringer_guidance_normal" />
+-- 
+2.43.0
+

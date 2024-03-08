@@ -1,0 +1,27 @@
+From fe244fbef3d77d86aea13f758a88345ae66d8a9c Mon Sep 17 00:00:00 2001
+From: beanstown106 <nbenis106@gmail.com>
+Date: Sat, 18 Feb 2017 04:00:12 -0500
+Subject: [PATCH] core: main: Disable Dalvik lock contention logging as it
+ isnt needed
+
+Change-Id: Ie2df691de4cfe7de229f32994fad50db9f1781a1
+---
+ core/main.mk | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/core/main.mk b/core/main.mk
+index 942853e36c..49f203c6be 100644
+--- a/core/main.mk
++++ b/core/main.mk
+@@ -398,8 +398,6 @@ endif # !user_variant
+ ifeq (true,$(strip $(enable_target_debugging)))
+   # Target is more debuggable and adbd is on by default
+   ADDITIONAL_SYSTEM_PROPERTIES += ro.debuggable=1
+-  # Enable Dalvik lock contention logging.
+-  ADDITIONAL_SYSTEM_PROPERTIES += dalvik.vm.lockprof.threshold=500
+ else # !enable_target_debugging
+   # Target is less debuggable and adbd is off by default
+   ADDITIONAL_SYSTEM_PROPERTIES += ro.debuggable=0
+-- 
+2.43.0
+

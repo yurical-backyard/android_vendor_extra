@@ -1,0 +1,28 @@
+From 520312beab7c1ef80c776de1014b104a0fc08e20 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sun, 27 Aug 2023 08:00:01 +0800
+Subject: [PATCH] services: Disable automatic system server heap dumps by
+ default
+
+Change-Id: I5406c6c5687eebf751ae20d035169ff42059f143
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../java/com/android/server/am/ActivityManagerConstants.java    | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/am/ActivityManagerConstants.java b/services/core/java/com/android/server/am/ActivityManagerConstants.java
+index 7fb82ef9199f..a43efad744ad 100644
+--- a/services/core/java/com/android/server/am/ActivityManagerConstants.java
++++ b/services/core/java/com/android/server/am/ActivityManagerConstants.java
+@@ -1915,7 +1915,7 @@ final class ActivityManagerConstants extends ContentObserver {
+         // Monitoring is on by default, so if the setting hasn't been set by the user,
+         // monitoring should be on.
+         final boolean enabled = Settings.Global.getInt(mResolver,
+-                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, 1) == 1;
++                Settings.Global.ENABLE_AUTOMATIC_SYSTEM_SERVER_HEAP_DUMPS, 0) == 1;
+ 
+         // Setting the threshold to 0 stops the checking.
+         final long threshold = enabled ? mSystemServerAutomaticHeapDumpPssThresholdBytes : 0;
+-- 
+2.43.0
+

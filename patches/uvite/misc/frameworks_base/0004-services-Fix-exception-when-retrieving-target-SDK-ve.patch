@@ -1,0 +1,39 @@
+From 4ac47d47312cf78b9fa39e5a7f89c62ffd46c471 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Wed, 4 Oct 2023 10:10:09 +0800
+Subject: [PATCH] services: Fix exception when retrieving target SDK
+ version
+
+10-04 09:52:52.960  1402  3741 E JavaBinder: *** Uncaught remote exception!  (Exceptions are not yet supported across processes.)
+10-04 09:52:52.960  1402  3741 E JavaBinder: java.lang.RuntimeException: android.os.RemoteException: Couldn't get targetSdkVersion for package com.android.accelerometergraph
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at android.os.Parcel.writeException(Parcel.java:2796)
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at android.os.Binder.execTransactInternal(Binder.java:1304)
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at android.os.Binder.execTransact(Binder.java:1244)
+10-04 09:52:52.960  1402  3741 E JavaBinder: Caused by: android.os.RemoteException: Couldn't get targetSdkVersion for package com.android.accelerometergraph
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at com.android.server.pm.PackageManagerNative.getTargetSdkVersionForPackage(PackageManagerNative.java:144)
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at android.content.pm.IPackageManagerNative$Stub.onTransact(IPackageManagerNative.java:256)
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	at android.os.Binder.execTransactInternal(Binder.java:1285)
+10-04 09:52:52.960  1402  3741 E JavaBinder: 	... 1 more
+
+Change-Id: Icdb1a1a2e7a9b33e8dde4b02e136a116ecf6f1b1
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../core/java/com/android/server/pm/PackageManagerNative.java   | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/pm/PackageManagerNative.java b/services/core/java/com/android/server/pm/PackageManagerNative.java
+index d035084d8b02..4de074aae5f5 100644
+--- a/services/core/java/com/android/server/pm/PackageManagerNative.java
++++ b/services/core/java/com/android/server/pm/PackageManagerNative.java
+@@ -108,7 +108,7 @@ final class PackageManagerNative extends IPackageManagerNative.Stub {
+             return targetSdk;
+         }
+ 
+-        throw new RemoteException("Couldn't get targetSdkVersion for package " + packageName);
++        return 34; // current version
+     }
+ 
+     @Override
+-- 
+2.43.0
+

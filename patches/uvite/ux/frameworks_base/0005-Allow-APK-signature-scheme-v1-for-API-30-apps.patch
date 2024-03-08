@@ -1,0 +1,30 @@
+From 5ca5a6cfa211a38475ba8c8ad4d62003de3b0ec0 Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Thu, 17 Sep 2020 22:24:17 -0700
+Subject: [PATCH] Allow APK signature scheme v1 for API 30+ apps
+
+F-Droid is currently building app packages with v1 signatures, even if
+they target API 30 or newer.
+
+Change-Id: I42180acc3b3fb28f073f4c19c2cffb44cba4f221
+---
+ core/java/android/util/apk/ApkSignatureVerifier.java | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/core/java/android/util/apk/ApkSignatureVerifier.java b/core/java/android/util/apk/ApkSignatureVerifier.java
+index 97d24ad34291..da04acedfc8d 100644
+--- a/core/java/android/util/apk/ApkSignatureVerifier.java
++++ b/core/java/android/util/apk/ApkSignatureVerifier.java
+@@ -617,9 +617,6 @@ public class ApkSignatureVerifier {
+      * {@code targetSdk}.
+      */
+     public static int getMinimumSignatureSchemeVersionForTargetSdk(int targetSdk) {
+-        if (targetSdk >= Build.VERSION_CODES.R) {
+-            return SignatureSchemeVersion.SIGNING_BLOCK_V2;
+-        }
+         return SignatureSchemeVersion.JAR;
+     }
+ 
+-- 
+2.43.0
+

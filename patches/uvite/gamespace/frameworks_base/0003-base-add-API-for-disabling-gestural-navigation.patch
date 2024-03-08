@@ -1,0 +1,346 @@
+From 99abea6e34fa6e3bb0fc08928b7fd3b525edd060 Mon Sep 17 00:00:00 2001
+From: ezio84 <brabus84@gmail.com>
+Date: Fri, 3 Dec 2021 19:51:29 +0530
+Subject: [PATCH] base: add API for disabling gestural navigation
+
+[jhonboy121]: adapted to A12L and A13
+[neobuddy89]: updated for A14
+
+Change-Id: I00fc39f3a50618821e7378358fcd6624fd594741
+Signed-off-by: jhonboy121 <alfredmathew05@gmail.com>
+Signed-off-by: Gustavo Mendes <gusttavo.me@outlook.com>
+---
+ .../android/internal/statusbar/IStatusBar.aidl |  5 +++++
+ .../internal/statusbar/IStatusBarService.aidl  |  3 +++
+ .../navigationbar/NavigationBarView.java       | 11 +++++++++++
+ .../gestural/EdgeBackGestureHandler.java       | 12 +++++++++++-
+ .../shade/NotificationPanelViewController.java |  9 ++++++++-
+ .../systemui/shade/ShadeViewController.kt      |  3 +++
+ .../shade/ShadeViewControllerEmptyImpl.kt      |  1 +
+ .../systemui/statusbar/CommandQueue.java       | 16 ++++++++++++++++
+ .../statusbar/phone/CentralSurfaces.java       |  2 ++
+ .../CentralSurfacesCommandQueueCallbacks.java  |  5 +++++
+ .../statusbar/phone/CentralSurfacesImpl.java   | 18 +++++++++++++++++-
+ .../statusbar/StatusBarManagerService.java     | 11 +++++++++++
+ 12 files changed, 93 insertions(+), 3 deletions(-)
+
+diff --git a/core/java/com/android/internal/statusbar/IStatusBar.aidl b/core/java/com/android/internal/statusbar/IStatusBar.aidl
+index 5758892096ec..afe1a348bb57 100644
+--- a/core/java/com/android/internal/statusbar/IStatusBar.aidl
++++ b/core/java/com/android/internal/statusbar/IStatusBar.aidl
+@@ -364,4 +364,9 @@ oneway interface IStatusBar
+      * Toggles flashlight of the device
+      */
+     void toggleCameraFlash();
++
++    /**
++     * Used to block or unblock usage of gestural navigation
++     */
++    void setBlockedGesturalNavigation(boolean blocked);
+ }
+diff --git a/core/java/com/android/internal/statusbar/IStatusBarService.aidl b/core/java/com/android/internal/statusbar/IStatusBarService.aidl
+index d26b14d17ad1..30872171f31c 100644
+--- a/core/java/com/android/internal/statusbar/IStatusBarService.aidl
++++ b/core/java/com/android/internal/statusbar/IStatusBarService.aidl
+@@ -235,4 +235,7 @@ interface IStatusBarService
+      * Toggles flashlight of the device
+      */
+     void toggleCameraFlash();
++
++    /** Used to block or unblock usage of gestural navigation. */
++    void setBlockedGesturalNavigation(boolean blocked);
+ }
+diff --git a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBarView.java b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBarView.java
+index 186c8753ad23..fe0dde86003b 100644
+--- a/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBarView.java
++++ b/packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBarView.java
+@@ -182,6 +182,8 @@ public class NavigationBarView extends FrameLayout {
+     @Nullable
+     private ViewGroup mNavigationBarContents = null;
+ 
++    private boolean mBlockedGesturalNavigation;
++
+     private class NavTransitionListener implements TransitionListener {
+         private boolean mBackTransitioning;
+         private boolean mHomeAppearing;
+@@ -752,10 +754,13 @@ public class NavigationBarView extends FrameLayout {
+         int displayId = mContext.getDisplayId();
+ 
+         sysUiState.setFlag(SYSUI_STATE_OVERVIEW_DISABLED,
++                        mBlockedGesturalNavigation ||
+                         (mDisabledFlags & View.STATUS_BAR_DISABLE_RECENT) != 0)
+                 .setFlag(SYSUI_STATE_HOME_DISABLED,
++                        mBlockedGesturalNavigation ||
+                         (mDisabledFlags & View.STATUS_BAR_DISABLE_HOME) != 0)
+                 .setFlag(SYSUI_STATE_SEARCH_DISABLED,
++                        mBlockedGesturalNavigation ||
+                         (mDisabledFlags & View.STATUS_BAR_DISABLE_SEARCH) != 0)
+                 .commitUpdate(displayId);
+     }
+@@ -797,6 +802,12 @@ public class NavigationBarView extends FrameLayout {
+                 mShowSwipeUpUi ? mQuickStepAccessibilityDelegate : null);
+     }
+ 
++    public void setBlockedGesturalNavigation(boolean blocked, SysUiState sysUiState) {
++        mBlockedGesturalNavigation = blocked;
++        mEdgeBackGestureHandler.setBlockedGesturalNavigation(blocked);
++        updateDisabledSystemUiStateFlags(sysUiState);
++    }
++
+     /**
+      * Enable or disable haptic feedback on the navigation bar buttons.
+      */
+diff --git a/packages/SystemUI/src/com/android/systemui/navigationbar/gestural/EdgeBackGestureHandler.java b/packages/SystemUI/src/com/android/systemui/navigationbar/gestural/EdgeBackGestureHandler.java
+index b21b0017208c..cfc49e23f043 100644
+--- a/packages/SystemUI/src/com/android/systemui/navigationbar/gestural/EdgeBackGestureHandler.java
++++ b/packages/SystemUI/src/com/android/systemui/navigationbar/gestural/EdgeBackGestureHandler.java
+@@ -290,6 +290,8 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
+ 
+     private final GestureNavigationSettingsObserver mGestureNavigationSettingsObserver;
+ 
++    private boolean mBlockedGesturalNavigation;
++
+     private final NavigationEdgeBackPlugin.BackCallback mBackCallback =
+             new NavigationEdgeBackPlugin.BackCallback() {
+                 @Override
+@@ -588,6 +590,10 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
+         mIsNavBarShownTransiently = isTransient;
+     }
+ 
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        mBlockedGesturalNavigation = blocked;
++    }
++
+     private void disposeInputChannel() {
+         if (mInputEventReceiver != null) {
+             mInputEventReceiver.dispose();
+@@ -664,7 +670,11 @@ public class EdgeBackGestureHandler implements PluginListener<NavigationEdgeBack
+                         "edge-swipe", mDisplayId);
+                 mInputEventReceiver = new InputChannelCompat.InputEventReceiver(
+                         mInputMonitor.getInputChannel(), Looper.getMainLooper(),
+-                        Choreographer.getInstance(), this::onInputEvent);
++                        Choreographer.getInstance(), event -> {
++                            if (!mBlockedGesturalNavigation) {
++                                onInputEvent(event);
++                            }
++                        });
+ 
+                 // Add a nav bar panel window
+                 mIsNewBackAffordanceEnabled = mFeatureFlags.isEnabled(Flags.NEW_BACK_AFFORDANCE);
+diff --git a/packages/SystemUI/src/com/android/systemui/shade/NotificationPanelViewController.java b/packages/SystemUI/src/com/android/systemui/shade/NotificationPanelViewController.java
+index ff0d5951258c..10402f66d68b 100644
+--- a/packages/SystemUI/src/com/android/systemui/shade/NotificationPanelViewController.java
++++ b/packages/SystemUI/src/com/android/systemui/shade/NotificationPanelViewController.java
+@@ -639,6 +639,8 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
+     private int mGoneToDreamingTransitionTranslationY;
+     private int mLockscreenToOccludedTransitionTranslationY;
+ 
++    private boolean mBlockedGesturalNavigation = false;
++
+     private final Runnable mFlingCollapseRunnable = () -> fling(0, false /* expand */,
+             mNextCollapseSpeedUpFactor, false /* expandBecauseOfFalsing */);
+     private final Runnable mAnimateKeyguardBottomAreaInvisibleEndRunnable =
+@@ -3662,6 +3664,11 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
+         );
+     }
+ 
++    @Override
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        mBlockedGesturalNavigation = blocked;
++    }
++
+     @Override
+     public void updateSystemUiStateFlags() {
+         if (SysUiState.DEBUG) {
+@@ -3673,7 +3680,7 @@ public final class NotificationPanelViewController implements ShadeSurface, Dump
+                 .setFlag(SYSUI_STATE_NOTIFICATION_PANEL_EXPANDED,
+                         isFullyExpanded() && !mQsController.getExpanded())
+                 .setFlag(SYSUI_STATE_QUICK_SETTINGS_EXPANDED,
+-                        isFullyExpanded() && mQsController.getExpanded()).commitUpdate(mDisplayId);
++                        mBlockedGesturalNavigation || (isFullyExpanded() && mQsController.getExpanded())).commitUpdate(mDisplayId);
+     }
+ 
+     private void debugLog(String fmt, Object... args) {
+diff --git a/packages/SystemUI/src/com/android/systemui/shade/ShadeViewController.kt b/packages/SystemUI/src/com/android/systemui/shade/ShadeViewController.kt
+index 182a676c9841..54cfe1e18f06 100644
+--- a/packages/SystemUI/src/com/android/systemui/shade/ShadeViewController.kt
++++ b/packages/SystemUI/src/com/android/systemui/shade/ShadeViewController.kt
+@@ -266,6 +266,9 @@ interface ShadeViewController {
+     /** Returns the ShadeFoldAnimator. */
+     val shadeFoldAnimator: ShadeFoldAnimator
+ 
++    /** Blocks gestural navigation */
++    fun setBlockedGesturalNavigation(blocked: Boolean)
++
+     companion object {
+         /**
+          * Returns a multiplicative factor to use when determining the falsing threshold for touches
+diff --git a/packages/SystemUI/src/com/android/systemui/shade/ShadeViewControllerEmptyImpl.kt b/packages/SystemUI/src/com/android/systemui/shade/ShadeViewControllerEmptyImpl.kt
+index 09b74b213ebf..58ce33de26a2 100644
+--- a/packages/SystemUI/src/com/android/systemui/shade/ShadeViewControllerEmptyImpl.kt
++++ b/packages/SystemUI/src/com/android/systemui/shade/ShadeViewControllerEmptyImpl.kt
+@@ -90,6 +90,7 @@ class ShadeViewControllerEmptyImpl @Inject constructor() : ShadeViewController {
+ 
+     override val shadeHeadsUpTracker = ShadeHeadsUpTrackerEmptyImpl()
+     override val shadeFoldAnimator = ShadeFoldAnimatorEmptyImpl()
++    override fun setBlockedGesturalNavigation(blocked: Boolean) {}
+ }
+ 
+ class ShadeHeadsUpTrackerEmptyImpl : ShadeHeadsUpTracker {
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/CommandQueue.java b/packages/SystemUI/src/com/android/systemui/statusbar/CommandQueue.java
+index 9930d209b85b..cde8c9749426 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/CommandQueue.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/CommandQueue.java
+@@ -178,6 +178,7 @@ public class CommandQueue extends IStatusBar.Stub implements
+     private static final int MSG_CONFIRM_IMMERSIVE_PROMPT = 77 << MSG_SHIFT;
+     private static final int MSG_IMMERSIVE_CHANGED = 78 << MSG_SHIFT;
+     private static final int MSG_TOGGLE_CAMERA_FLASH = 79 << MSG_SHIFT;
++    private static final int MSG_SET_BLOCKED_GESTURAL_NAVIGATION = 80 << MSG_SHIFT;
+ 
+     public static final int FLAG_EXCLUDE_NONE = 0;
+     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
+@@ -523,6 +524,8 @@ public class CommandQueue extends IStatusBar.Stub implements
+          * @see IStatusBar#immersiveModeChanged
+          */
+         default void immersiveModeChanged(int rootDisplayAreaId, boolean isImmersiveMode) {}
++
++        default void setBlockedGesturalNavigation(boolean blocked) {}
+     }
+ 
+     @VisibleForTesting
+@@ -1402,6 +1405,16 @@ public class CommandQueue extends IStatusBar.Stub implements
+         }
+     }
+ 
++    @Override
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        synchronized (mLock) {
++            if (mHandler.hasMessages(MSG_SET_BLOCKED_GESTURAL_NAVIGATION)) {
++                mHandler.removeMessages(MSG_SET_BLOCKED_GESTURAL_NAVIGATION);
++            }
++            mHandler.obtainMessage(MSG_SET_BLOCKED_GESTURAL_NAVIGATION, blocked).sendToTarget();
++        }
++    }
++
+     private final class H extends Handler {
+         private H(Looper l) {
+             super(l);
+@@ -1886,6 +1899,9 @@ public class CommandQueue extends IStatusBar.Stub implements
+                         mCallbacks.get(i).immersiveModeChanged(rootDisplayAreaId, isImmersiveMode);
+                     }
+                     break;
++                case MSG_SET_BLOCKED_GESTURAL_NAVIGATION:
++                    mCallbacks.forEach(cb -> cb.setBlockedGesturalNavigation((Boolean) msg.obj));
++                    break;
+             }
+         }
+     }
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java
+index bd1b59dcdf30..d9bfa32bfef9 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java
+@@ -398,4 +398,6 @@ public interface CentralSurfaces extends Dumpable, LifecycleOwner {
+      */
+     ActivityLaunchAnimator.Controller getAnimatorControllerFromNotification(
+             ExpandableNotificationRow associatedView);
++
++    void setBlockedGesturalNavigation(boolean blocked);
+ }
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesCommandQueueCallbacks.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesCommandQueueCallbacks.java
+index 5de3ba2a8a34..cfd6f136dfbe 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesCommandQueueCallbacks.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesCommandQueueCallbacks.java
+@@ -559,6 +559,11 @@ public class CentralSurfacesCommandQueueCallbacks implements CommandQueue.Callba
+         }
+     }
+ 
++    @Override
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        mCentralSurfaces.setBlockedGesturalNavigation(blocked);
++    }
++
+     private boolean isGoingToSleep() {
+         return mWakefulnessLifecycle.getWakefulness()
+                 == WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP;
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesImpl.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesImpl.java
+index aa6192f87a8c..51356f257353 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesImpl.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfacesImpl.java
+@@ -160,6 +160,7 @@ import com.android.systemui.keyguard.ScreenLifecycle;
+ import com.android.systemui.keyguard.WakefulnessLifecycle;
+ import com.android.systemui.keyguard.ui.binder.LightRevealScrimViewBinder;
+ import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel;
++import com.android.systemui.model.SysUiState;
+ import com.android.systemui.navigationbar.NavigationBarController;
+ import com.android.systemui.navigationbar.NavigationBarView;
+ import com.android.systemui.notetask.NoteTaskController;
+@@ -678,6 +679,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
+         }
+     };
+ 
++    private final SysUiState mSysUiState;
++
+     /**
+      * Public constructor for CentralSurfaces.
+      *
+@@ -793,7 +796,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
+             UserTracker userTracker,
+             Provider<FingerprintManager> fingerprintManager,
+             ActivityStarter activityStarter,
+-            BurnInProtectionController burnInProtectionController
++            BurnInProtectionController burnInProtectionController,
++            SysUiState sysUiState
+     ) {
+         mContext = context;
+         mNotificationsController = notificationsController;
+@@ -892,6 +896,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
+         mFingerprintManager = fingerprintManager;
+         mActivityStarter = activityStarter;
+         mBurnInProtectionController = burnInProtectionController;
++        mSysUiState = sysUiState;
+ 
+         mLockscreenShadeTransitionController = lockscreenShadeTransitionController;
+         mStartingSurfaceOptional = startingSurfaceOptional;
+@@ -3351,6 +3356,17 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
+         }
+     }
+ 
++    @Override
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        if (getShadeViewController() != null) {
++            getShadeViewController().setBlockedGesturalNavigation(blocked);
++            getShadeViewController().updateSystemUiStateFlags();
++        }
++        if (getNavigationBarView() != null) {
++            getNavigationBarView().setBlockedGesturalNavigation(blocked, mSysUiState);
++        }
++    }
++
+     /**
+      * Dismiss the keyguard then execute an action.
+      *
+diff --git a/services/core/java/com/android/server/statusbar/StatusBarManagerService.java b/services/core/java/com/android/server/statusbar/StatusBarManagerService.java
+index 5183e0cd081e..7c22ad3a7e2c 100644
+--- a/services/core/java/com/android/server/statusbar/StatusBarManagerService.java
++++ b/services/core/java/com/android/server/statusbar/StatusBarManagerService.java
+@@ -1131,6 +1131,17 @@ public class StatusBarManagerService extends IStatusBarService.Stub implements D
+         }
+     }
+ 
++    @Override
++    public void setBlockedGesturalNavigation(boolean blocked) {
++        if (mBar != null) {
++            try {
++                mBar.setBlockedGesturalNavigation(blocked);
++            } catch (RemoteException ex) {
++                // do nothing
++            }
++        }
++    }
++
+     // TODO(b/117478341): make it aware of multi-display if needed.
+     @Override
+     public void disable(int what, IBinder token, String pkg) {
+-- 
+2.43.0
+

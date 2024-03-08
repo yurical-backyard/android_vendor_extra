@@ -1,0 +1,28 @@
+From 4fd9a83b30c9862c47beeb55cef322d0f8c9fa2f Mon Sep 17 00:00:00 2001
+From: Yuan Si <do4suki@gmail.com>
+Date: Fri, 29 Dec 2023 22:14:31 +0800
+Subject: [PATCH] SystemUI: Revert new color tokens changes for auto
+ brightness toggle
+
+Change-Id: Icd4af840ade44adf2e33ca1acc15b7c3b771f08f
+Signed-off-by: Yuan Si <do4suki@gmail.com>
+---
+ .../com/android/systemui/settings/brightness/ToggleIconView.kt  | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/settings/brightness/ToggleIconView.kt b/packages/SystemUI/src/com/android/systemui/settings/brightness/ToggleIconView.kt
+index 0a2393621e5f..6f8c42d07be4 100644
+--- a/packages/SystemUI/src/com/android/systemui/settings/brightness/ToggleIconView.kt
++++ b/packages/SystemUI/src/com/android/systemui/settings/brightness/ToggleIconView.kt
+@@ -43,7 +43,7 @@ class ToggleIconView constructor(
+     }
+ 
+     private val colorActive = Utils.getColorAttrDefaultColor(context, android.R.attr.colorAccent)
+-    private val colorInactive = Utils.getColorAttrDefaultColor(context, R.attr.shadeInactive)
++    private val colorInactive = Utils.getColorAttrDefaultColor(context, R.attr.offStateColor)
+     private val colorSecondaryActive = Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.textColorPrimaryInverse)
+     private val colorSecondaryInactive = Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary)
+ 
+-- 
+2.43.0
+

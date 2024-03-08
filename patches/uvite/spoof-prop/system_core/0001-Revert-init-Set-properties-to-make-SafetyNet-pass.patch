@@ -1,0 +1,48 @@
+From 316c651909e4c77c5c86171408a25ca9cdcbfb78 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Mon, 11 Mar 2024 00:37:42 +0900
+Subject: [PATCH] Revert "init: Set properties to make SafetyNet pass"
+
+This reverts commit 84f24e06f1cb47e1e52cc564a8489bcf0e193d27.
+---
+ init/property_service.cpp | 17 -----------------
+ 1 file changed, 17 deletions(-)
+
+diff --git a/init/property_service.cpp b/init/property_service.cpp
+index a063de6bb..e6ef33dee 100644
+--- a/init/property_service.cpp
++++ b/init/property_service.cpp
+@@ -1360,15 +1360,6 @@ static void ProcessBootconfig() {
+     });
+ }
+ 
+-static void SetSafetyNetProps() {
+-
+-    InitPropertySet("ro.boot.flash.locked", "1");
+-    InitPropertySet("ro.boot.vbmeta.device_state", "locked");
+-    InitPropertySet("ro.boot.verifiedbootstate", "green");
+-    InitPropertySet("ro.boot.veritymode", "enforcing");
+-
+-}
+-
+ void PropertyInit() {
+     selinux_callback cb;
+     cb.func_audit = PropertyAuditCallback;
+@@ -1383,14 +1374,6 @@ void PropertyInit() {
+         LOG(FATAL) << "Failed to load serialized property info file";
+     }
+ 
+-    // Report a valid verified boot chain to make Google SafetyNet integrity
+-    // checks pass. This needs to be done before parsing the kernel cmdline as
+-    // these properties are read-only and will be set to invalid values with
+-    // androidboot cmdline arguments.
+-    if (!IsRecoveryMode()) {
+-      SetSafetyNetProps();
+-    }
+-
+     // If arguments are passed both on the command line and in DT,
+     // properties set in DT always have priority over the command-line ones.
+     ProcessKernelDt();
+-- 
+2.43.0
+

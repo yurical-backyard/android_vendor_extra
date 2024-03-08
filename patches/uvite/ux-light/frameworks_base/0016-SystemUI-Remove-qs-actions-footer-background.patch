@@ -1,0 +1,26 @@
+From b36a40da904879fb8b901826691e35a5e74eaeed Mon Sep 17 00:00:00 2001
+From: BladeRunner-A2C <prisoner56898@protonmail.com>
+Date: Mon, 3 Oct 2022 16:06:19 +0600
+Subject: [PATCH] SystemUI: Remove qs actions footer background
+
+Signed-off-by: BladeRunner-A2C <prisoner56898@protonmail.com>
+Change-Id: I16236d70813efa5be2db6290ce03e0eb66eee8ac
+---
+ packages/SystemUI/res/drawable/qs_footer_actions_background.xml | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/packages/SystemUI/res/drawable/qs_footer_actions_background.xml b/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
+index c9517cd905dc..809e72ce908f 100644
+--- a/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
++++ b/packages/SystemUI/res/drawable/qs_footer_actions_background.xml
+@@ -15,7 +15,6 @@
+ -->
+ <inset xmlns:android="http://schemas.android.com/apk/res/android">
+     <shape>
+-        <solid android:color="?attr/underSurfaceColor"/>
+         <corners android:topLeftRadius="@dimen/qs_corner_radius"
+                  android:topRightRadius="@dimen/qs_corner_radius"/>
+     </shape>
+-- 
+2.43.0
+

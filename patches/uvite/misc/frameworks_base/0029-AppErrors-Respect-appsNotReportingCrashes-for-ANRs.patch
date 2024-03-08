@@ -1,0 +1,46 @@
+From 585cfdeaaa3331717382de248daba9c33254235d Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Tue, 21 Dec 2021 17:32:33 -0800
+Subject: [PATCH] AppErrors: Respect appsNotReportingCrashes for ANRs
+
+We want to use config_appsNotReportingCrashes to silence benign System
+UI ANRs seemingly caused by an AOSP bug related to freezing the
+screenshot process, until Google fixes it:
+
+E ActivityManager: ANR in com.android.systemui:screenshot
+E ActivityManager: Reason: Input dispatching timed out (Screenshot (server) is not responding. Waited 5002ms for MotionEvent)
+E ActivityManager: Frozen: true
+
+Change-Id: I213c1d99d35fb80016e5a72136c99b5fb2cde4a6
+---
+ services/core/java/com/android/server/am/AppErrors.java | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/AppErrors.java b/services/core/java/com/android/server/am/AppErrors.java
+index 061bcd740f6b..4480a817e8c5 100644
+--- a/services/core/java/com/android/server/am/AppErrors.java
++++ b/services/core/java/com/android/server/am/AppErrors.java
+@@ -1106,7 +1106,10 @@ class AppErrors {
+             boolean showBackground = Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                     Settings.Secure.ANR_SHOW_BACKGROUND, 0,
+                     mService.mUserController.getCurrentUserId()) != 0;
+-            if (mService.mAtmInternal.canShowErrorDialogs() || showBackground) {
++            final boolean anrSilenced = mAppsNotReportingCrashes != null
++                    && mAppsNotReportingCrashes.contains(proc.info.packageName);
++            if (!anrSilenced &&
++                    (mService.mAtmInternal.canShowErrorDialogs() || showBackground)) {
+                 AnrController anrController = errState.getDialogController().getAnrController();
+                 if (anrController == null) {
+                     errState.getDialogController().showAnrDialogs(data);
+@@ -1131,7 +1134,7 @@ class AppErrors {
+                 MetricsLogger.action(mContext, MetricsProto.MetricsEvent.ACTION_APP_ANR,
+                         AppNotRespondingDialog.CANT_SHOW);
+                 // Just kill the app if there is no dialog to be shown.
+-                doKill = true;
++                doKill = !anrSilenced;
+             }
+         }
+         if (doKill) {
+-- 
+2.43.0
+

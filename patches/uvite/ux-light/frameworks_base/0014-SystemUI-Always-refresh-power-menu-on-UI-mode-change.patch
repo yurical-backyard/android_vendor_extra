@@ -1,0 +1,41 @@
+From d3681e302afe6ca1c1ed6577998db14e14aa52cb Mon Sep 17 00:00:00 2001
+From: Danny Lin <danny@kdrag0n.dev>
+Date: Tue, 8 Mar 2022 20:37:33 -0800
+Subject: [PATCH] SystemUI: Always refresh power menu on UI mode change
+
+This is necessary for reliably theming the global actions dialog with
+dynamic colors and adapting it to light/dark themes.
+
+Demo screenshots (with color overlays applied):
+https://twitter.com/kdrag0n/status/1445960685427433473
+
+[kdrag0n: ported to 12L]
+
+Change-Id: If58fb4079a4cd11414ff928fad3576beecb14ff5
+---
+ .../systemui/globalactions/GlobalActionsDialogLite.java  | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
+index 040ee7938f1d..e6443fbacf1a 100644
+--- a/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
++++ b/packages/SystemUI/src/com/android/systemui/globalactions/GlobalActionsDialogLite.java
+@@ -749,6 +749,15 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
+                 user.id) != 0;
+     }
+ 
++    @Override
++    public void onUiModeChanged() {
++        // Colors may change, depending on UI mode
++        mContext.getTheme().applyStyle(mContext.getThemeResId(), true);
++        if (mDialog != null) {
++            mDialog.refreshDialog();
++        }
++    }
++
+     @Override
+     public void onConfigChanged(Configuration newConfig) {
+         if (mDialog != null && mDialog.isShowing()
+-- 
+2.43.0
+

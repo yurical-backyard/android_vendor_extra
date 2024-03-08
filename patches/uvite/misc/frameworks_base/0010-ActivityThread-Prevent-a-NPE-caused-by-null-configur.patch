@@ -1,0 +1,31 @@
+From 65db3b70b54d98a282d35239cc088f29fffde042 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Sat, 8 Apr 2023 19:59:59 +0800
+Subject: [PATCH] ActivityThread: Prevent a NPE caused by null
+ configuration
+
+* followup for 7d00865ae9250da503410ddb1763183526833ba2
+
+reference: https://android-review.googlesource.com/c/platform/frameworks/base/+/2492460
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ core/java/android/app/ActivityThread.java | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/java/android/app/ActivityThread.java b/core/java/android/app/ActivityThread.java
+index 6f15a02c73c1..000269702237 100644
+--- a/core/java/android/app/ActivityThread.java
++++ b/core/java/android/app/ActivityThread.java
+@@ -6090,7 +6090,7 @@ public final class ActivityThread extends ClientTransactionHandler
+         final boolean movedToDifferentDisplay = isDifferentDisplay(activity.getDisplayId(),
+                 displayId);
+         final Configuration currentResConfig = activity.getResources().getConfiguration();
+-        final int diff = currentResConfig.diffPublicOnly(newConfig);
++        final int diff = currentResConfig != null ? currentResConfig.diffPublicOnly(newConfig) : 0xffffffff;
+         final boolean hasPublicResConfigChange = diff != 0;
+         // TODO(b/173090263): Use diff instead after the improvement of AssetManager and
+         // ResourcesImpl constructions.
+-- 
+2.43.0
+

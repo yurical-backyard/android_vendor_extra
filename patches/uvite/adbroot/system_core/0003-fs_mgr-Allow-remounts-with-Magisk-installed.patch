@@ -1,0 +1,34 @@
+From 6a677dceacc9af443471575f44dd45e6f46dd5cc Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Sun, 19 Apr 2020 16:28:53 +0100
+Subject: [PATCH] fs_mgr: Allow remounts with Magisk installed
+
+This allows remount to gracefully mount /system when Magisk
+is installed.
+
+As a sidenote, the ro.debuggable property check can safely
+be removed due to the simple fact that CPP preprocessor flag
+ALLOW_ADBD_DISABLE_VERITY=1 is passed when building
+userdebug/eng.
+
+Change-Id: Ic10eccbf5d225468c3dc42f8ae3ae7c05b49a699
+---
+ fs_mgr/fs_mgr_remount.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs_mgr/fs_mgr_remount.cpp b/fs_mgr/fs_mgr_remount.cpp
+index 1f107f57d..a57b7373a 100644
+--- a/fs_mgr/fs_mgr_remount.cpp
++++ b/fs_mgr/fs_mgr_remount.cpp
+@@ -625,7 +625,7 @@ int main(int argc, char* argv[]) {
+     // If somehow this executable is delivered on a "user" build, it can
+     // not function, so providing a clear message to the caller rather than
+     // letting if fall through and provide a lot of confusing failure messages.
+-    if (!ALLOW_ADBD_DISABLE_VERITY || !android::base::GetBoolProperty("ro.debuggable", false)) {
++    if (!ALLOW_ADBD_DISABLE_VERITY) {
+         LOG(ERROR) << "Device must be userdebug build";
+         return EXIT_FAILURE;
+     }
+-- 
+2.43.0
+

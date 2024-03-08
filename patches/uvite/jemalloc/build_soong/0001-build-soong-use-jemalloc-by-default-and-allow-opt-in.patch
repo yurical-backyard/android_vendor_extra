@@ -1,0 +1,90 @@
+From 1d86602bbb9062859314b24ceeb20980af3032e5 Mon Sep 17 00:00:00 2001
+From: Juhyung Park <qkrwngud825@gmail.com>
+Date: Sun, 12 Jun 2022 02:45:42 +0900
+Subject: [PATCH] build: soong: use jemalloc by default and allow opt-in to
+ scudo (2/4)
+
+Also, clean up broken DisableScudo/PRODUCT_DISABLE_SCUDO.
+
+After these changes, malloc_not_svelte is only used to override cflags
+in external/jemalloc_new. Change accordingly.
+
+Detailed reason for switching to jemalloc by default is written in the
+bionic commit.
+
+Change-Id: Id5afcf064a5db6011676dc7141c71fd5bb0007cb
+Signed-off-by: Juhyung Park <qkrwngud825@gmail.com>
+---
+ android/config.go   |  2 +-
+ android/variable.go | 14 +++++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/android/config.go b/android/config.go
+index 9ea90f01e..8d4ed11a5 100644
+--- a/android/config.go
++++ b/android/config.go
+@@ -1113,7 +1113,7 @@ func (c *config) EnableCFI() bool {
+ }
+ 
+ func (c *config) DisableScudo() bool {
+-	return Bool(c.productVariables.DisableScudo)
++	return !Bool(c.productVariables.Malloc_use_scudo)
+ }
+ 
+ func (c *config) Android64() bool {
+diff --git a/android/variable.go b/android/variable.go
+index 3d486f6fe..a355fc0c5 100644
+--- a/android/variable.go
++++ b/android/variable.go
+@@ -70,7 +70,7 @@ type variableProperties struct {
+ 			Enabled *bool `android:"arch_variant"`
+ 		} `android:"arch_variant"`
+ 
+-		Malloc_not_svelte struct {
++		Malloc_use_scudo struct {
+ 			Cflags              []string `android:"arch_variant"`
+ 			Shared_libs         []string `android:"arch_variant"`
+ 			Whole_static_libs   []string `android:"arch_variant"`
+@@ -79,6 +79,14 @@ type variableProperties struct {
+ 			Header_libs         []string `android:"arch_variant"`
+ 		} `android:"arch_variant"`
+ 
++		Malloc_not_svelte struct {
++			Cflags              []string `android:"arch_variant"`
++			Shared_libs         []string `android:"arch_variant"`
++			Whole_static_libs   []string `android:"arch_variant"`
++			Exclude_static_libs []string `android:"arch_variant"`
++			Header_libs         []string `android:"arch_variant"`
++		} `android:"arch_variant"`
++
+ 		Malloc_zero_contents struct {
+ 			Cflags []string `android:"arch_variant"`
+ 		} `android:"arch_variant"`
+@@ -302,6 +310,7 @@ type productVariables struct {
+ 	Unbundled_build_sdks_from_source *bool    `json:",omitempty"`
+ 	Always_use_prebuilt_sdks         *bool    `json:",omitempty"`
+ 	Skip_boot_jars_check             *bool    `json:",omitempty"`
++	Malloc_use_scudo                 *bool    `json:",omitempty"`
+ 	Malloc_not_svelte                *bool    `json:",omitempty"`
+ 	Malloc_zero_contents             *bool    `json:",omitempty"`
+ 	Malloc_pattern_fill_contents     *bool    `json:",omitempty"`
+@@ -340,8 +349,6 @@ type productVariables struct {
+ 	CFIExcludePaths []string `json:",omitempty"`
+ 	CFIIncludePaths []string `json:",omitempty"`
+ 
+-	DisableScudo *bool `json:",omitempty"`
+-
+ 	MemtagHeapExcludePaths      []string `json:",omitempty"`
+ 	MemtagHeapAsyncIncludePaths []string `json:",omitempty"`
+ 	MemtagHeapSyncIncludePaths  []string `json:",omitempty"`
+@@ -567,6 +574,7 @@ func (v *productVariables) SetDefaultConfig() {
+ 		AAPTCharacteristics: stringPtr("nosdcard"),
+ 		AAPTPrebuiltDPI:     []string{"xhdpi", "xxhdpi"},
+ 
++		Malloc_use_scudo:             boolPtr(false),
+ 		Malloc_not_svelte:            boolPtr(true),
+ 		Malloc_zero_contents:         boolPtr(true),
+ 		Malloc_pattern_fill_contents: boolPtr(false),
+-- 
+2.43.0
+

@@ -1,0 +1,94 @@
+From 8205c1b943d75b4988165ef4b98c96844c759ac9 Mon Sep 17 00:00:00 2001
+From: Simao Gomes Viana <simao@halogenos.org>
+Date: Sat, 23 Jul 2022 20:34:38 +0200
+Subject: [PATCH] Use SOONG_ZIP for all zip usages
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Multithreaded
+
+Signed-off-by: Simão Gomes Viana <devel@superboring.dev>
+---
+ core/Makefile                       | 6 +++---
+ core/definitions.mk                 | 4 ++--
+ core/jacoco.mk                      | 2 +-
+ core/tasks/tools/package-modules.mk | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/core/Makefile b/core/Makefile
+index 0c0a1cb77c..fe54ed4751 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -6597,7 +6597,7 @@ $(APPS_ZIP): $(FULL_SYSTEMIMAGE_DEPS)
+ 	    echo "No apps to zip up. Generating empty apps archive." ; \
+ 	    a=$$(mktemp /tmp/XXXXXXX) && touch $$a && zip $@ $$a && zip -d $@ $$a; \
+ 	else \
+-	    zip -qjX $@ $$apps_to_zip; \
++	    $(SOONG_ZIP) -qjX $@ $$apps_to_zip; \
+ 	fi
+ 
+ ifeq (true,$(EMMA_INSTRUMENT))
+@@ -7003,7 +7003,7 @@ INTERNAL_EMULATOR_PACKAGE_TARGET := $(PRODUCT_OUT)/$(name).zip
+ 
+ $(INTERNAL_EMULATOR_PACKAGE_TARGET): $(INTERNAL_EMULATOR_PACKAGE_FILES)
+ 	@echo "Package: $@"
+-	$(hide) zip -qjX $@ $(INTERNAL_EMULATOR_PACKAGE_FILES)
++	$(hide) $(SOONG_ZIP) -qjX $@ $(INTERNAL_EMULATOR_PACKAGE_FILES)
+ 
+ endif
+ 
+@@ -7123,7 +7123,7 @@ $(INTERNAL_SDK_TARGET): $(deps)
+ 	    HOST_OUT_EXECUTABLES=$(HOST_OUT_EXECUTABLES) HOST_OS=$(HOST_OS) \
+ 	        development/build/tools/sdk_clean.sh $(PRIVATE_DIR) && \
+ 	    chmod -R ug+rwX $(PRIVATE_DIR) && \
+-	    cd $(dir $@) && zip -rqX $(notdir $@) $(PRIVATE_NAME) \
++	    cd $(dir $@) && $(SOONG_ZIP) -rqX $(notdir $@) $(PRIVATE_NAME) \
+ 	) || ( rm -rf $(PRIVATE_DIR) $@ && exit 44 )
+ 
+ MAIN_SDK_DIR  := $(sdk_dir)
+diff --git a/core/definitions.mk b/core/definitions.mk
+index 0e7deeb19c..9eb7325ab5 100644
+--- a/core/definitions.mk
++++ b/core/definitions.mk
+@@ -3387,9 +3387,9 @@ endef
+ # files and we should not strip.
+ define dexpreopt-remove-classes.dex
+ $(hide) if (zipinfo $1 '*.dex' 2>/dev/null | grep -v ' stor ' >/dev/null) ; then \
+-zip --quiet --delete $(1) classes.dex; \
++$(SOONG_ZIP) --quiet --delete $(1) classes.dex; \
+ dex_index=2; \
+-while zip --quiet --delete $(1) classes$${dex_index}.dex > /dev/null; do \
++while $(SOONG_ZIP) --quiet --delete $(1) classes$${dex_index}.dex > /dev/null; do \
+   let dex_index=dex_index+1; \
+ done \
+ fi
+diff --git a/core/jacoco.mk b/core/jacoco.mk
+index 7099526455..26b1240893 100644
+--- a/core/jacoco.mk
++++ b/core/jacoco.mk
+@@ -69,7 +69,7 @@ $(my_unzipped_timestamp_path): $(LOCAL_FULL_CLASSES_PRE_JACOCO_JAR)
+ $(my_classes_to_report_on_path): PRIVATE_UNZIPPED_PATH := $(my_unzipped_path)
+ $(my_classes_to_report_on_path): $(my_unzipped_timestamp_path)
+ 	rm -f $@
+-	zip -q $@ \
++	$(SOONG_ZIP) -q $@ \
+ 	  -r $(PRIVATE_UNZIPPED_PATH)
+ 
+ # Make a rule to copy the jacoco-report-classes.jar to a packaging directory.
+diff --git a/core/tasks/tools/package-modules.mk b/core/tasks/tools/package-modules.mk
+index d9e4c580ad..3a626780dd 100644
+--- a/core/tasks/tools/package-modules.mk
++++ b/core/tasks/tools/package-modules.mk
+@@ -104,7 +104,7 @@ $(my_package_zip) : $(my_built_modules)
+ 	  cp -Rf $(word 1,$(pair)) $(word 2,$(pair)) && ) true
+ 	$(hide) $(foreach f, $(PRIVATE_PICKUP_FILES),\
+ 	  cp -RfL $(f) $(dir $@) && ) true
+-	$(hide) cd $(dir $@) && zip -rqX $(notdir $@) *
++	$(hide) cd $(dir $@) && $(SOONG_ZIP) -rqX $(notdir $@) *
+ 
+ my_makefile :=
+ my_staging_dir :=
+-- 
+2.43.0
+

@@ -1,0 +1,44 @@
+From b2e85a67c14386acafe250124ed9a699ecc1d789 Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Wed, 17 May 2023 16:38:59 +0800
+Subject: [PATCH] ExifInterface: Catch IOException caused by invalid
+ image
+
+05-17 16:31:57.210  9127 10514 W ExifInterface: Invalid image: ExifInterface got an unsupported image format file(ExifInterface supports JPEG and some RAW image formats only) or a corrupted JPEG file to ExifInterface.
+05-17 16:31:57.210  9127 10514 W ExifInterface: java.io.IOException: Invalid byte order: 2631
+05-17 16:31:57.210  9127 10514 W ExifInterface: 	at android.media.ExifInterface.readByteOrder(ExifInterface.java:4007)
+05-17 16:31:57.210  9127 10514 W ExifInterface: 	at android.media.ExifInterface.parseTiffHeaders(ExifInterface.java:4014)
+05-17 16:31:57.210  9127 10514 W ExifInterface: 	at android.media.ExifInterface.getRawAttributes(ExifInterface.java:2973)
+05-17 16:31:57.210  9127 10514 W ExifInterface: 	at android.media.ExifInterface.loadAttributes(ExifInterface.java:2022)
+05-17 16:31:57.210  9127 10514 W ExifInterface: 	at android.media.ExifInterface.initForFilename(ExifInterface.java:2582)
+
+Change-Id: I148f267a381b1dc398a9379deb109e6361da7b58
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ media/java/android/media/ExifInterface.java | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/media/java/android/media/ExifInterface.java b/media/java/android/media/ExifInterface.java
+index 23f87abaffed..04871a260bf3 100644
+--- a/media/java/android/media/ExifInterface.java
++++ b/media/java/android/media/ExifInterface.java
+@@ -4011,10 +4011,12 @@ public class ExifInterface {
+ 
+     private void parseTiffHeaders(ByteOrderedDataInputStream dataInputStream,
+             int exifBytesLength) throws IOException {
+-        // Read byte order
+-        mExifByteOrder = readByteOrder(dataInputStream);
+-        // Set byte order
+-        dataInputStream.setByteOrder(mExifByteOrder);
++        try {
++            // Read byte order
++            mExifByteOrder = readByteOrder(dataInputStream);
++            // Set byte order
++            dataInputStream.setByteOrder(mExifByteOrder);
++        } catch (IOException e) {}
+ 
+         // Check start code
+         int startCode = dataInputStream.readUnsignedShort();
+-- 
+2.43.0
+

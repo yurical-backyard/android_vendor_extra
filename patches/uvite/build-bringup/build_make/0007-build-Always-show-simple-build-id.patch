@@ -1,0 +1,38 @@
+From 61174f0ebaa735567b566c47e1b1d6a694d0e3b0 Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1@outlook.com>
+Date: Tue, 10 Aug 2021 20:50:19 +0900
+Subject: [PATCH] build: Always show simple build id
+
+---
+ core/sysprop.mk | 15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
+
+diff --git a/core/sysprop.mk b/core/sysprop.mk
+index 30c006bd60..6fd6b7e0d8 100644
+--- a/core/sysprop.mk
++++ b/core/sysprop.mk
+@@ -225,20 +225,7 @@ BUILD_THUMBPRINT :=
+ BUILD_DESC := $(TARGET_PRODUCT)-$(TARGET_BUILD_VARIANT) $(PLATFORM_VERSION) $(BUILD_ID) $(BUILD_NUMBER_FROM_FILE) $(BUILD_VERSION_TAGS)
+ 
+ # BUILD_DISPLAY_ID is shown under Settings -> About Phone
+-ifeq ($(TARGET_BUILD_VARIANT),user)
+-  # User builds should show:
+-  # release build number or branch.buld_number non-release builds
+-
+-  # Dev. branches should have DISPLAY_BUILD_NUMBER set
+-  ifeq (true,$(DISPLAY_BUILD_NUMBER))
+-    BUILD_DISPLAY_ID := $(BUILD_ID).$(BUILD_NUMBER_FROM_FILE) $(BUILD_KEYS)
+-  else
+-    BUILD_DISPLAY_ID := $(BUILD_ID) $(BUILD_KEYS)
+-  endif
+-else
+-  # Non-user builds should show detailed build information
+-  BUILD_DISPLAY_ID := $(BUILD_DESC)
+-endif
++BUILD_DISPLAY_ID := $(BUILD_ID) $(BUILD_KEYS)
+ 
+ # TARGET_BUILD_FLAVOR and ro.build.flavor are used only by the test
+ # harness to distinguish builds. Only add _asan for a sanitized build
+-- 
+2.43.0
+

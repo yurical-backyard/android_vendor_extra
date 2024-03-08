@@ -1,0 +1,37 @@
+From 08bc2d97041ecfc679cf9bb88c2e9e7a87ac3fae Mon Sep 17 00:00:00 2001
+From: Joseph Gates <jgates@squareup.com>
+Date: Wed, 8 Nov 2023 16:48:14 -0800
+Subject: [PATCH] Role: Fix resolving non-exclusive default holders
+
+A role's default holders can be defined as a list with semicolon
+separators. This commit fixes a bug where the non-split string of
+default holders was used with non-exclusive roles, causing a failure of
+the type:
+
+Cannot get ApplicationInfo for default holder: com.packA;com.packB
+
+Test: build
+
+Change-Id: Idd986b1c49c0be5ae5f060fe436d95e5de2c01f7
+Merged-In: Idd986b1c49c0be5ae5f060fe436d95e5de2c01f7
+Signed-off-by: Joseph Gates <jgates@squareup.com>
+---
+ .../java/com/android/role/controller/model/Role.java            | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/PermissionController/role-controller/java/com/android/role/controller/model/Role.java b/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
+index aa6cba1..9ff16db 100644
+--- a/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
++++ b/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
+@@ -462,7 +462,7 @@ public class Role {
+         } else {
+             List<String> packageNames = new ArrayList<>();
+             for (String defaultHolder : defaultHolders.split(DEFAULT_HOLDER_SEPARATOR)) {
+-                String packageName = getQualifiedDefaultHolderPackageName(defaultHolders, context);
++                String packageName = getQualifiedDefaultHolderPackageName(defaultHolder, context);
+                 if (packageName != null) {
+                     packageNames.add(packageName);
+                 }
+-- 
+2.43.0
+

@@ -1,0 +1,30 @@
+From 43bcfea7e1fd47cc53d6a14d818a79cf33d3cb7c Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Wed, 15 Nov 2023 07:17:58 +0800
+Subject: [PATCH] PermissionController: Bypass google apps for role
+ qualifications
+
+attempts to mitigate scenarios like:
+11-14 10:51:27.968  3937 14789 E RoleControllerServiceImpl: Default/fallback role holder package doesn't qualify for the role, package: com.google.android.gms.supervision, role: android.app.role.SYSTEM_SUPERVISION
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../java/com/android/role/controller/model/Role.java            | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/PermissionController/role-controller/java/com/android/role/controller/model/Role.java b/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
+index 9ff16db..3ee500d 100644
+--- a/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
++++ b/PermissionController/role-controller/java/com/android/role/controller/model/Role.java
+@@ -569,7 +569,7 @@ public class Role {
+     public boolean isPackageQualified(@NonNull String packageName, @NonNull Context context) {
+         RoleManager roleManager = context.getSystemService(RoleManager.class);
+         if (shouldAllowBypassingQualification(context)
+-                && RoleManagerCompat.isBypassingRoleQualification(roleManager)) {
++                && RoleManagerCompat.isBypassingRoleQualification(roleManager) || packageName.contains("com.google.android")) {
+             return true;
+         }
+ 
+-- 
+2.43.0
+

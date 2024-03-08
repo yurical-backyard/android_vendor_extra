@@ -1,0 +1,35 @@
+From e4f124c623347b48664a75f54cc52a0ca69d1eb7 Mon Sep 17 00:00:00 2001
+From: Simao Gomes Viana <xdevs23@outlook.com>
+Date: Fri, 23 Dec 2022 18:27:30 +0530
+Subject: [PATCH] AppProfiler: dont be so hectic on cpu battery stats
+
+Also disable cpu monitor
+TheHardGamer: Port to A13
+
+Signed-off-by: Pranav Vashi <neobuddy89@gmail.com>
+Signed-off-by: Anushek Prasal <anushekprasal@gmail.com>
+---
+ services/core/java/com/android/server/am/AppProfiler.java | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/services/core/java/com/android/server/am/AppProfiler.java b/services/core/java/com/android/server/am/AppProfiler.java
+index cc299e28b033..ef40a3d7f6dd 100644
+--- a/services/core/java/com/android/server/am/AppProfiler.java
++++ b/services/core/java/com/android/server/am/AppProfiler.java
+@@ -132,10 +132,10 @@ public class AppProfiler {
+     // write battery stats every 30 minutes.
+     static final long BATTERY_STATS_TIME = 30 * 60 * 1000;
+ 
+-    static final boolean MONITOR_CPU_USAGE = true;
++    static final boolean MONITOR_CPU_USAGE = false;
+ 
+-    // don't sample cpu less than every 5 seconds.
+-    static final long MONITOR_CPU_MIN_TIME = 5 * 1000;
++    // don't sample cpu less than every 15 seconds.
++    static final long MONITOR_CPU_MIN_TIME = 15 * 1000;
+ 
+     // wait possibly forever for next cpu sample.
+     static final long MONITOR_CPU_MAX_TIME = 0x0fffffff;
+-- 
+2.43.0
+

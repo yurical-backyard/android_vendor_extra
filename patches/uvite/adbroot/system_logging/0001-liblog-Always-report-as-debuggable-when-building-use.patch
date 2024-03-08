@@ -1,0 +1,48 @@
+From a481357fbe22745b8c94fd4d1e1c6d7dc8d3400d Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Sun, 19 Apr 2020 15:14:42 +0100
+Subject: [PATCH] liblog: Always report as debuggable when building
+ userdebug/eng
+
+This doesn't affect the normal behavior of our builds, because
+ro.debuggable is set to 1 on userdebug/eng anyway.
+
+However, it's helpful because making __android_log_is_debuggable
+return a compile time value rather than the value of runtime prop
+lets us pass checks that'd otherwise prevent us from using adb root
+when Magisk is installed.
+
+Change-Id: I36f53976162e652a38008ced459ca02fd6c0af51
+---
+ liblog/properties.cpp | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/liblog/properties.cpp b/liblog/properties.cpp
+index bd5f5e7a..f6cf41e6 100644
+--- a/liblog/properties.cpp
++++ b/liblog/properties.cpp
+@@ -262,12 +262,16 @@ int __android_log_is_loggable(int prio, const char* tag, int default_prio) {
+ }
+ 
+ int __android_log_is_debuggable() {
+-  static int is_debuggable = [] {
+-    char value[PROP_VALUE_MAX] = {};
+-    return __system_property_get("ro.debuggable", value) > 0 && !strcmp(value, "1");
+-  }();
++  if (ANDROID_DEBUGGABLE) {
++    return 1;
++  } else {
++    static int is_debuggable = [] {
++      char value[PROP_VALUE_MAX] = {};
++      return __system_property_get("ro.debuggable", value) > 0 && !strcmp(value, "1");
++    }();
+ 
+-  return is_debuggable;
++    return is_debuggable;
++  }
+ }
+ 
+ /*
+-- 
+2.43.0
+

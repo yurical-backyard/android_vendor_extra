@@ -1,0 +1,42 @@
+From fe6185953d3bd1ede7d0f5f0efc58369f9b02d6b Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Fri, 20 Oct 2023 21:35:58 +0800
+Subject: [PATCH] safety center: Mitigate possible crashes caused by
+ invalid cases
+
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../data/SafetySourceDataValidator.java            | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java b/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
+index d1d53f0..2374bdf 100644
+--- a/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
++++ b/service/java/com/android/safetycenter/data/SafetySourceDataValidator.java
+@@ -82,11 +82,21 @@ final class SafetySourceDataValidator {
+             @UserIdInt int userId) {
+         SafetyCenterConfigReader.ExternalSafetySource externalSafetySource =
+                 mSafetyCenterConfigReader.getExternalSafetySource(safetySourceId, packageName);
+-        if (externalSafetySource == null && !safetySourceId.equals("GooglePasswordCheckup")) {
+-            throw new IllegalArgumentException("Unexpected safety source: " + safetySourceId);
++        
++        if (safetySourceId.equals("GooglePasswordCheckup")) {
++            return true;
++        }
++
++        if (externalSafetySource == null) {
++            return false;
+         }
+ 
+         SafetySource safetySource = externalSafetySource.getSafetySource();
++        
++        if (safetySource == null) {
++            return false;
++        }
++
+         validateCallingPackage(safetySource, packageName, safetySourceId);
+ 
+         if (UserUtils.isManagedProfile(userId, mContext)
+-- 
+2.43.0
+

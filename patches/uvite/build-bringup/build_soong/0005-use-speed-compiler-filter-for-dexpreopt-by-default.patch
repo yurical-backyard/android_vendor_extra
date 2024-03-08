@@ -1,0 +1,25 @@
+From 92aaee42fd17517c712e6542f4577c2fdf18b7ed Mon Sep 17 00:00:00 2001
+From: Daniel Micay <danielmicay@gmail.com>
+Date: Wed, 13 Oct 2021 19:54:06 -0400
+Subject: [PATCH] use speed compiler filter for dexpreopt by default
+
+---
+ dexpreopt/dexpreopt.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dexpreopt/dexpreopt.go b/dexpreopt/dexpreopt.go
+index 2b38793ff..4290dec0b 100644
+--- a/dexpreopt/dexpreopt.go
++++ b/dexpreopt/dexpreopt.go
+@@ -431,7 +431,7 @@ func dexpreoptCommand(ctx android.PathContext, globalSoong *GlobalSoongConfig, g
+ 		} else if global.DefaultCompilerFilter != "" {
+ 			compilerFilter = global.DefaultCompilerFilter
+ 		} else {
+-			compilerFilter = "quicken"
++			compilerFilter = "speed"
+ 		}
+ 		if module.EnforceUsesLibraries {
+ 			// If the verify_uses_libraries check failed (in this case status file contains a
+-- 
+2.43.0
+

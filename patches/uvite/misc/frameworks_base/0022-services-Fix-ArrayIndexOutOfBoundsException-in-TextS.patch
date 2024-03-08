@@ -1,0 +1,32 @@
+From ad8a4ad29c60458ecb7c04a6ab46c0d0f9b1687b Mon Sep 17 00:00:00 2001
+From: minaripenguin <minaripenguin@users.noreply.github.com>
+Date: Mon, 10 Jul 2023 19:17:26 +0800
+Subject: [PATCH] services: Fix ArrayIndexOutOfBoundsException in
+ TextServicesManagerService
+
+aosp-ticket: https://android-review.googlesource.com/c/platform/frameworks/base/+/2651646
+
+Change-Id: Id1170bfd20da9b37947ea9343411da257f23dc22
+Signed-off-by: minaripenguin <minaripenguin@users.noreply.github.com>
+---
+ .../server/textservices/TextServicesManagerService.java       | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/services/core/java/com/android/server/textservices/TextServicesManagerService.java b/services/core/java/com/android/server/textservices/TextServicesManagerService.java
+index 8431f1cc0b4c..1ccdf245e2d0 100644
+--- a/services/core/java/com/android/server/textservices/TextServicesManagerService.java
++++ b/services/core/java/com/android/server/textservices/TextServicesManagerService.java
+@@ -935,7 +935,9 @@ public class TextServicesManagerService extends ITextServicesManager.Stub {
+             Slog.e(TAG, "Remove the spell checker bind unexpectedly.");
+             final int size = mListeners.getRegisteredCallbackCount();
+             for (int i = size - 1; i >= 0; --i) {
+-                mListeners.unregister(mListeners.getRegisteredCallbackItem(i));
++                if (i < mListeners.getRegisteredCallbackCount()) {
++                    mListeners.unregister(mListeners.getRegisteredCallbackItem(i));
++                }
+             }
+             mPendingSessionRequests.clear();
+             mOnGoingSessionRequests.clear();
+-- 
+2.43.0
+

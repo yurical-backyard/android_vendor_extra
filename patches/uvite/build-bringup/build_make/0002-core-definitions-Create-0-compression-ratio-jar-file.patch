@@ -1,0 +1,32 @@
+From 1377ae767b916b49934ca718c87d167b23f13f83 Mon Sep 17 00:00:00 2001
+From: arter97 <qkrwngud825@gmail.com>
+Date: Tue, 7 Apr 2015 18:44:50 +0900
+Subject: [PATCH] core: definitions: Create 0 compression ratio jar files
+
+Modern devices now has a blazing fast NAND that storage speed is
+not the bottle-neck when it comes to reading apks.
+
+So use 0 compression ratio for improving speed and memory usage.
+
+Change-Id: I4406ebd5ddb1989175836043c79200589efbb7c9
+Signed-off-by: arter97 <qkrwngud825@gmail.com>
+---
+ core/definitions.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/definitions.mk b/core/definitions.mk
+index eaac6756a3..0e7deeb19c 100644
+--- a/core/definitions.mk
++++ b/core/definitions.mk
+@@ -2862,7 +2862,7 @@ endef
+ # $(2): the classes.dex file.
+ define create-dex-jar
+ find $(dir $(2)) -maxdepth 1 -name "classes*.dex" | sort > $(1).lst
+-$(SOONG_ZIP) -o $(1) -C $(dir $(2)) -l $(1).lst
++$(SOONG_ZIP) -L 0 -o $(1) -C $(dir $(2)) -l $(1).lst
+ endef
+ 
+ # Add java resources added by the current module to an existing package.
+-- 
+2.43.0
+

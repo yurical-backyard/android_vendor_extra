@@ -1,0 +1,40 @@
+From 4292ffc77b2eddef6c50a573ec401de5e7b4264b Mon Sep 17 00:00:00 2001
+From: Tommy Webb <tommy@calyxinstitute.org>
+Date: Wed, 21 Feb 2024 21:46:13 +0000
+Subject: [PATCH] Fix uninstall for all users
+
+Fix the "App could not be uninstalled" error that occurs when trying
+to uninstall a package that is "Not installed for this user."
+
+Change-Id: I8f93840ad3ef2868197c52ce658ae481c2370e66
+---
+ .../com/android/server/pm/DeletePackageHelper.java  | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/services/core/java/com/android/server/pm/DeletePackageHelper.java b/services/core/java/com/android/server/pm/DeletePackageHelper.java
+index b00c578a5fae..01eb14c9cf71 100644
+--- a/services/core/java/com/android/server/pm/DeletePackageHelper.java
++++ b/services/core/java/com/android/server/pm/DeletePackageHelper.java
+@@ -871,8 +871,17 @@ final class DeletePackageHelper {
+         }
+         final int callingUserId = UserHandle.getUserId(callingUid);
+         // If the caller installed the pkgName, then allow it to silently uninstall.
+-        if (callingUid == snapshot.getPackageUid(
+-                snapshot.getInstallerPackageName(pkgName, userId), 0, callingUserId)) {
++        String installerPkgName;
++        try {
++            installerPkgName = snapshot.getInstallerPackageName(pkgName, userId);
++        } catch (IllegalArgumentException e) {
++            // We may not be able to retrieve the installer package name if the package is not
++            // installed for userId, which is possible if we are being invoked with the
++            // DELETE_ALL_USERS flag. In that case, just skip the check.
++            installerPkgName = null;
++        }
++        if (installerPkgName != null && callingUid == snapshot.getPackageUid(
++                installerPkgName, 0, callingUserId)) {
+             return true;
+         }
+ 
+-- 
+2.43.0
+

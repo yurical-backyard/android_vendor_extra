@@ -1,0 +1,23 @@
+From aa6b529c06a92a6ac47ed6eb1d591be703b2e28c Mon Sep 17 00:00:00 2001
+From: Yurical <yurical1g@gmail.com>
+Date: Sun, 17 Mar 2024 01:53:09 +0900
+Subject: [PATCH] Use zsh equivalent of BASH_SOURCE[0] as fallback
+
+Change-Id: Ide670c19fde834919198d03c9ba60e867109e590
+---
+ vendorsetup.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/vendorsetup.sh b/vendorsetup.sh
+index 16f20a3..dfc3235 100755
+--- a/vendorsetup.sh
++++ b/vendorsetup.sh
+@@ -25,4 +25,4 @@
+ # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE US
+ 
+-export QTI_BUILDTOOLS_DIR=$(dirname ${BASH_SOURCE[0]})
++export QTI_BUILDTOOLS_DIR=$(dirname -- ${BASH_SOURCE[0]:-${(%):-%x}})
+-- 
+2.43.0
+

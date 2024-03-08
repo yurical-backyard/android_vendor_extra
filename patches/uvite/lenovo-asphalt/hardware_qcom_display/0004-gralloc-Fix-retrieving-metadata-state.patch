@@ -1,0 +1,34 @@
+From f760ce099c239b9330612db93611d44f2690fab8 Mon Sep 17 00:00:00 2001
+From: Bruno Martins <bgcngm@gmail.com>
+Date: Wed, 2 Aug 2023 21:13:20 +0100
+Subject: [PATCH] gralloc: Fix retrieving metadata state
+
+The call to function GetMetaDataByReference was inadvertently removed
+in commit 07f2c74, because `result` was an unused variable.
+Restore that call, but do it properly avoiding the compilation issue.
+
+This fixes the logspam:
+
+  E qtigralloc: Unable to get metadata state
+
+Change-Id: I2c2ee63df25c9e2ef5857fef5b3d49454f6240f3
+---
+ gralloc/gr_buf_mgr.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gralloc/gr_buf_mgr.cpp b/gralloc/gr_buf_mgr.cpp
+index 70debbc7b..c2ca97dce 100644
+--- a/gralloc/gr_buf_mgr.cpp
++++ b/gralloc/gr_buf_mgr.cpp
+@@ -881,7 +881,7 @@ Error BufferManager::GetMetadata(private_handle_t *handle, int64_t metadatatype_
+   auto metadata = reinterpret_cast<MetaData_t *>(handle->base_metadata);
+ 
+   void *metadata_ptr = nullptr;
+-  Error error = Error::NONE;
++  Error error = GetMetaDataByReference(handle, metadatatype_value, &metadata_ptr);
+   switch (metadatatype_value) {
+     case (int64_t)StandardMetadataType::BUFFER_ID:
+       if (metadata_ptr != nullptr) {
+-- 
+2.43.0
+
