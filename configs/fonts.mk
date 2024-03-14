@@ -11,3 +11,8 @@ PRODUCT_PACKAGES += \
 	FontExtraInterOverlay \
 	FontExtraNanumSquareNeoOverlay \
 	FontExtraWantedSansOverlay
+
+ifeq ($(PRIVATE_BUILD),true)
+PRODUCT_PACKAGES += \
+	FontExtraAppleSDGothicNeoOverlay
+endif

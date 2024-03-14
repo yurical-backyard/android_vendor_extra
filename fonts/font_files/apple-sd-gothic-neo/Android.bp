@@ -1,0 +1,50 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+prebuilt_font {
+    name: "AppleSDGothicNeo-100.otf",
+    src: "AppleSDGothicNeo-100.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-200.otf",
+    src: "AppleSDGothicNeo-200.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-300.otf",
+    src: "AppleSDGothicNeo-300.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-400.otf",
+    src: "AppleSDGothicNeo-400.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-500.otf",
+    src: "AppleSDGothicNeo-500.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-600.otf",
+    src: "AppleSDGothicNeo-600.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-700.otf",
+    src: "AppleSDGothicNeo-700.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-800.otf",
+    src: "AppleSDGothicNeo-800.otf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "AppleSDGothicNeo-900.otf",
+    src: "AppleSDGothicNeo-900.otf",
+    product_specific: true,
+}

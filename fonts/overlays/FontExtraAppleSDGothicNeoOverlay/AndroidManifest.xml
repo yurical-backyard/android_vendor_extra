@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-License-Identifier: Apache-2.0
+     SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.android.theme.font.apple_sd_gothic_neo">
+
+    <overlay
+        android:targetPackage="android"
+        android:category="android.theme.customization.font"
+        android:priority="1" />
+
+    <application
+        android:label="@string/font_apple_sd_gothic_neo_overlay"
+        android:hasCode="false">
+        <meta-data
+            android:name="android.theme.customization.REQUIRED_SYSTEM_FONTS"
+            android:value="apple-sd-gothic-neo,apple-sd-gothic-neo-thin,apple-sd-gothic-neo-light,apple-sd-gothic-neo-medium,apple-sd-gothic-neo-black" />
+    </application>
+
+</manifest>

@@ -451,4 +451,20 @@
     <alias name="wanted-sans-light" to="wanted-sans" weight="300" />
     <alias name="wanted-sans-medium" to="wanted-sans" weight="500" />
     <alias name="wanted-sans-black" to="wanted-sans" weight="900" />
+
+    <family customizationType="new-named-family" name="apple-sd-gothic-neo">
+        <font weight="100" style="normal">AppleSDGothicNeo-100.otf</font>
+        <font weight="200" style="normal">AppleSDGothicNeo-200.otf</font>
+        <font weight="300" style="normal">AppleSDGothicNeo-300.otf</font>
+        <font weight="400" style="normal">AppleSDGothicNeo-400.otf</font>
+        <font weight="500" style="normal">AppleSDGothicNeo-500.otf</font>
+        <font weight="600" style="normal">AppleSDGothicNeo-600.otf</font>
+        <font weight="700" style="normal">AppleSDGothicNeo-700.otf</font>
+        <font weight="800" style="normal">AppleSDGothicNeo-800.otf</font>
+        <font weight="900" style="normal">AppleSDGothicNeo-900.otf</font>
+    </family>
+    <alias name="apple-sd-gothic-neo-thin" to="apple-sd-gothic-neo" weight="100" />
+    <alias name="apple-sd-gothic-neo-light" to="apple-sd-gothic-neo" weight="300" />
+    <alias name="apple-sd-gothic-neo-medium" to="apple-sd-gothic-neo" weight="500" />
+    <alias name="apple-sd-gothic-neo-black" to="apple-sd-gothic-neo" weight="900" />
 </fonts-modification>

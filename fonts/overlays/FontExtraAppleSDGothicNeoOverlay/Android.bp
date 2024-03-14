@@ -1,0 +1,31 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+runtime_resource_overlay {
+    name: "FontExtraAppleSDGothicNeoOverlay",
+    theme: "FontExtraAppleSDGothicNeo",
+    product_specific: true,
+    required: [
+        "AppleSDGothicNeo-100.otf",
+        "AppleSDGothicNeo-200.otf",
+        "AppleSDGothicNeo-300.otf",
+        "AppleSDGothicNeo-400.otf",
+        "AppleSDGothicNeo-500.otf",
+        "AppleSDGothicNeo-600.otf",
+        "AppleSDGothicNeo-700.otf",
+        "AppleSDGothicNeo-800.otf",
+        "AppleSDGothicNeo-900.otf",
+    ],
+    overrides: [
+        "fonts_customization.xml",
+        "FontLatoOverlay",
+        "FontRubikOverlay",
+        "FontGoogleSansOverlay",
+        "FontHarmonySansOverlay",
+        "FontInterOverlay",
+        "FontManropeOverlay",
+        "FontUrbanistOverlay",
+    ],
+}
