@@ -1,0 +1,24 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+runtime_resource_overlay {
+    name: "FontExtraInterOverlay",
+    theme: "FontExtraInter",
+    product_specific: true,
+    required: [
+        "Inter-VF-Italic.ttf",
+        "Inter-VF.ttf",
+    ],
+    overrides: [
+        "fonts_customization.xml",
+        "FontLatoOverlay",
+        "FontRubikOverlay",
+        "FontGoogleSansOverlay",
+        "FontHarmonySansOverlay",
+        "FontInterOverlay",
+        "FontManropeOverlay",
+        "FontUrbanistOverlay",
+    ],
+}

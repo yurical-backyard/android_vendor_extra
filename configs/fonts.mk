@@ -7,5 +7,6 @@ PRODUCT_COPY_FILES += \
 
 # Overlays for UI font styles
 PRODUCT_PACKAGES += \
+	FontExtraInterOverlay \
 	FontExtraNanumSquareNeoOverlay \
 	FontExtraWantedSansOverlay

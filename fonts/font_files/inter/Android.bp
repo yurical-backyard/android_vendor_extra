@@ -1,0 +1,15 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ * SPDX-FileCopyrightText: Copyright 2021 The Proton AOSP Project
+ */
+
+prebuilt_font {
+    name: "Inter-VF-Italic.ttf",
+    src: "Inter-VF-Italic.ttf",
+    product_specific: true,
+}
+prebuilt_font {
+    name: "Inter-VF.ttf",
+    src: "Inter-VF.ttf",
+    product_specific: true,
+}
