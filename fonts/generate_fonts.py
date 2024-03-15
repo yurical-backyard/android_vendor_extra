@@ -14,6 +14,7 @@ METADATA_ALIASES = ['', 'thin', 'light', 'medium', 'black']
 # Language code: See https://developer.android.com/guide/topics/resources/providing-resources#AlternativeResources
 # Example: "Noto Sans": { "family": "noto-sans", "translations": { "ko": "본고딕" } },
 FONTS = {
+    "Google Sans": { "family": "google-sans", "body-postfix": "-text" },
     "Inter": { "family": "inter", "body-postfix": "-text" },
     "Nanum Square Neo": { "family": "nanum-square-neo", "translations": { "ko": "나눔스퀘어 네오" } },
     "Wanted Sans": { "family": "wanted-sans" },
