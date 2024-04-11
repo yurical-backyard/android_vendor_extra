@@ -12,3 +12,9 @@ PRODUCT_PACKAGES += \
 # Next Player
 PRODUCT_PACKAGES += \
     NextPlayer
+
+ifeq ($(TARGET_PRODUCT), aospa_asphalt)
+ifeq ($(PRIVATE_BUILD), true)
+BOARD_PREBUILT_DTBIMAGE_DIR := device/lenovo/asphalt-kernel/dtbs-private
+endif
+endif
